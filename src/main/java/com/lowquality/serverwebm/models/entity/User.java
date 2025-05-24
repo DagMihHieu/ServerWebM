@@ -2,24 +2,14 @@ package com.lowquality.serverwebm.models.entity;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
 import lombok.Data;
 
 @Data
@@ -28,16 +18,16 @@ import lombok.Data;
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_user", nullable = false)
+    @Column(name = "id", nullable = false)
     private Integer id;
 
     @Column(name = "email", unique = true, length = 50)
     private String email;
 
-    @Column(name = "password", nullable = false, length = 100)
+    @Column(name = "password", nullable = false, length = 255)
     private String password;
 
-    @Column(name = "full_name", length = 255) 
+    @Column(name = "full_name", length = 100) 
     private String fullName;
 
     @Column(name = "avatar_url")
@@ -46,13 +36,9 @@ public class User implements UserDetails {
     @Column(name = "google_id")
     private String googleId;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-        name = "user_roles",
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
-    private Set<Role> roles = new HashSet<>();
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "role_id")
+    private Role role;
 
     @Column(name = "is_active")
     private boolean isActive = true;
@@ -67,6 +53,9 @@ public class User implements UserDetails {
     protected void onCreate() {
         createdAt = java.time.LocalDateTime.now();
         updatedAt = java.time.LocalDateTime.now();
+        if (role == null) {
+            role = new Role(2); // Gán mặc định role có id = 2 nếu chưa có
+        }
     }
 
     @PreUpdate
@@ -76,9 +65,7 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.stream()
-            .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
-            .collect(java.util.stream.Collectors.toSet());
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.getName()));
     }
 
     @Override

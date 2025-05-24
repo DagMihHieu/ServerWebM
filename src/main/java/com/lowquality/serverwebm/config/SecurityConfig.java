@@ -34,12 +34,8 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/h2-console/**", "/oauth2/**").permitAll()
+                .requestMatchers("/api/auth/**", "/oauth2/**").permitAll()
                 .anyRequest().authenticated()
-            )
-            .oauth2Login(oauth2 -> oauth2
-                .loginPage("/api/auth/login")
-                .defaultSuccessUrl("/api/auth/oauth2/callback/google", true)
             )
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

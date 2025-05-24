@@ -9,22 +9,22 @@ import lombok.Data;
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name="id",nullable = false, unique = true)
+    private int role_Id;
 
-    @Column(nullable = false, unique = true)
+    
+    @Column(name="role_name",length = 10,nullable = false)
     private String name;
-
-    @Column
-    private String description;
 
     public Role() {}
 
-    public Role(String name) {
-        this.name = name;
+    public Role(int role_Id) {
+        this.role_Id = role_Id;
     }
 
-    public Role(String name, String description) {
+    public Role(int role_Id, String name) {
+        this.role_Id = role_Id;
         this.name = name;
-        this.description = description;
+
     }
 } 
