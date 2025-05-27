@@ -5,7 +5,7 @@ import java.util.Optional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.lowquality.serverwebm.dto.LoginResponse;
+import com.lowquality.serverwebm.models.DTO.LoginResponse;
 import com.lowquality.serverwebm.models.entity.User;
 import com.lowquality.serverwebm.repository.UserRepository;
 import com.lowquality.serverwebm.security.JwtService;
