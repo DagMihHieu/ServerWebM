@@ -33,13 +33,14 @@ public class Mangadetail {
             inverseJoinColumns = @JoinColumn(name = "category_id")
     )
     private List<Category> categories = new ArrayList<>();
-    @Column(name = "status")
-    private int status;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "status_id")
+    private Status status_id;
     @Column(name = "created_at")
     private java.time.LocalDateTime createdAt;
     @Column(name = "updated_at")
     private java.time.LocalDateTime updatedAt;
-    @OneToMany(mappedBy = "manga_id", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "manga", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Chapter> chapters = new ArrayList<>();
     @PrePersist
     protected void onCreate() {

@@ -54,7 +54,7 @@ public class ChapterService {
     }
 
     public List<ChapterDTO> getChaptersByMangaId(Integer mangaId) {
-        return chapterRepository.findByManga_Id(mangaId).stream()
+        return chapterRepository.findByManga_id(mangaId).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }

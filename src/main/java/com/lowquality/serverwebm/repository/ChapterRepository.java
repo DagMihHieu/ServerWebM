@@ -7,8 +7,6 @@ import java.util.Collection;
 import java.util.List;
 
 public interface ChapterRepository extends JpaRepository<Chapter, Integer> {
-    List<Chapter> findByManga_Id(Integer mangaId);
-    boolean existsByManga_id(Integer mangaId);
+    List<Chapter> findByManga_id(Integer mangaId);
 
-    Collection<Object> findById_manga(Integer mangaId);
 }

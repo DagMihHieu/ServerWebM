@@ -43,8 +43,6 @@ public class CategoryService {
                 .id(categories.getId())
                 .category_name(categories.getCategory_name()).build();
     }
-
-
     public Category findById(Integer categoryId) {
         Optional<Category> category = categoriesRepository.findById(categoryId);
         if (category.isPresent()) {
@@ -52,5 +50,15 @@ public class CategoryService {
         } else {
             throw new IllegalArgumentException("Category not found: " + categoryId);
         }
+    }
+    public List<CategoryDTO> getCategoriesByMangaId(Integer mangaId) {
+        return categoriesRepository.findAll().stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+    public CategoryDTO updateCategory(Integer categoryId, String categoryName) {
+        Category category = findById(categoryId);
+        category.setCategory_name(categoryName);
+        return convertToDTO(category);
     }
 }

@@ -16,13 +16,11 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDTO {
-    private Integer id;
-    private String email;
-    private String fullName;
-    private String avatarUrl;
-    private String googleId;
-    private int roleID;
-    private boolean isActive;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+private Integer id;
+private String fullName;
+private String email;
+private String avatarUrl;
+private String googleId;
+private RoleDTO role;
+private boolean isActive;
 } 

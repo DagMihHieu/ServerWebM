@@ -32,7 +32,6 @@ public class AuthorController {
 
     @PostMapping
     public ResponseEntity<AuthorDTO> createAuthor(@RequestParam String authorName) {
-        // Note: You'll need to add a createAuthor method in AuthorService
         AuthorDTO authorDTO = authorService.createAuthor(authorName);
         return ResponseEntity.ok(authorDTO);
     }

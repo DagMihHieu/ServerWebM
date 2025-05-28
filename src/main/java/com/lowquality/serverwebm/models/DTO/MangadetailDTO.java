@@ -20,5 +20,5 @@ public class MangadetailDTO {
     private String cover_img;
     private String description;
     private List<CategoryDTO> id_category;
-    private int status;
+    private StatusDTO id_status;
 }
