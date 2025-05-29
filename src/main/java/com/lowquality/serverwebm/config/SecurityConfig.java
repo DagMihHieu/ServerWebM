@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -34,7 +35,15 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/oauth2/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
+
+                    // Các API POST, PUT, DELETE yêu cầu ROLE_ADMIN
+                    .requestMatchers(HttpMethod.POST, "/api/**").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.PUT, "/api/**").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")
+
+                    // Các endpoint auth cho phép tất cả
+                    .requestMatchers("/api/auth/**", "/oauth2/**").permitAll()
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session

@@ -11,7 +11,7 @@ public class Chapter {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
-    @Column(name = "name", length = 100)
+    @Column(name = "chapter_title", length = 100)
     private String name;
     @Column(name = "chap_number")
     private Integer chap_number;
