@@ -1,6 +1,8 @@
 package com.lowquality.serverwebm.controller;
 
+import com.lowquality.serverwebm.models.DTO.ChapterDTO;
 import com.lowquality.serverwebm.models.DTO.MangadetailDTO;
+import com.lowquality.serverwebm.service.ChapterService;
 import com.lowquality.serverwebm.service.MangaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,10 +15,12 @@ import java.util.List;
 public class MangaController {
 
     private final MangaService mangaService;
+    private final ChapterService chapterService;
 
     @Autowired
-    public MangaController(MangaService mangaService) {
+    public MangaController(MangaService mangaService, ChapterService chapterService) {
         this.mangaService = mangaService;
+        this.chapterService = chapterService;
     }
 
     // Get all manga with optional filters
@@ -30,7 +34,6 @@ public class MangaController {
         return ResponseEntity.ok(mangaList);
     }
 
-    // Other existing endpoints...
     @PostMapping("/{mangaId}/categories")
     public ResponseEntity<Void> addCategoriesToManga(
             @PathVariable Integer mangaId,
@@ -54,9 +57,20 @@ public class MangaController {
         mangaService.addAuthorToManga(mangaId, authorId);
         return ResponseEntity.ok().build();
     }
-
     @GetMapping("/{id}")
     public ResponseEntity<MangadetailDTO> getMangaById(@PathVariable Integer id) {
         return ResponseEntity.ok(mangaService.getMangaById(id));
     }
+    @GetMapping("/{id}/chapter")
+    public ResponseEntity<List<ChapterDTO>> getAllChapter(@PathVariable Integer id) {
+        return ResponseEntity.ok(chapterService.getChaptersByMangaId(id));
+    }
+
+//    @PostMapping("/{mangaId}/chapter")
+//    public ResponseEntity<ChapterDTO> addChapterToManga(
+//            @PathVariable Integer mangaId,
+//            @RequestParam String chapterName,
+//            @RequestParam Integer chapterNumber) {
+//        return ResponseEntity.ok(chapterService.addChapter(chapterName,chapterNumber, mangaId));
+//    }
 }

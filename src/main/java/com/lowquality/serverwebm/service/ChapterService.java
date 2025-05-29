@@ -20,6 +20,7 @@ public class ChapterService {
         this.mangaService = mangaService;
     }
 
+
     public Chapter findById(Integer id) {
         return chapterRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Chapter not found: " + id));
@@ -42,13 +43,13 @@ public class ChapterService {
                 .build();
     }
 
-    public ChapterDTO addChapter(String chapterName, Integer mangaId) {
+    public ChapterDTO addChapter(String chapterName,Integer chapNumber, Integer mangaId) {
         Mangadetail manga = mangaService.getMangaEntityById(mangaId);
 
         Chapter chapter = new Chapter();
         chapter.setName(chapterName);
         chapter.setManga(manga);
-
+        chapter.setChap_number(chapNumber);
         chapter = chapterRepository.save(chapter);
         return convertToDTO(chapter);
     }

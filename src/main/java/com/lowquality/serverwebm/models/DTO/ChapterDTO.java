@@ -12,5 +12,6 @@ import lombok.NoArgsConstructor;
 public class ChapterDTO {
     private Integer id;
     private String chapter_name;
+    private Integer chap_number;
     private MangadetailDTO manga_id;
 }
