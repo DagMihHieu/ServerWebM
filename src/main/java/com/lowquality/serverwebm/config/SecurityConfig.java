@@ -32,24 +32,31 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .authorizeHttpRequests(auth -> auth
-                    .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .authorizeHttpRequests(auth -> auth
 
-                    // Các API POST, PUT, DELETE yêu cầu ROLE_ADMIN
-                    .requestMatchers(HttpMethod.POST, "/api/**").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.PUT, "/api/**").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")
+                        // Các endpoint auth cho phép tất cả
+                        .requestMatchers("/api/auth/**").permitAll()
 
-                    // Các endpoint auth cho phép tất cả
-                    .requestMatchers("/api/auth/**", "/oauth2/**").permitAll()
-                .anyRequest().authenticated()
-            )
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                        // /api/users/**: chỉ ADMIN và MOD
+                        .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "MOD")
+
+                        // Các API public cho phép GET
+                        .requestMatchers(HttpMethod.GET, "/api/manga/**", "/api/categories/**", "/api/authors/**").permitAll()
+
+                        // Các API này: POST, PUT, DELETE chỉ ADMIN và MOD
+                        .requestMatchers(HttpMethod.POST, "/api/manga/**", "/api/categories/**", "/api/authors/**").hasAnyRole("ADMIN", "MOD")
+                        .requestMatchers(HttpMethod.PUT, "/api/manga/**", "/api/categories/**", "/api/authors/**").hasAnyRole("ADMIN", "MOD")
+                        .requestMatchers(HttpMethod.DELETE, "/api/manga/**", "/api/categories/**", "/api/authors/**").hasAnyRole("ADMIN", "MOD")
+
+                        // Mọi request khác cần xác thực
+                        .anyRequest().permitAll()
+                )
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -67,4 +74,4 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-} 
+}

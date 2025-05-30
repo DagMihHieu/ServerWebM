@@ -27,4 +27,8 @@ public class GlobalExceptionHandler {
         response.put("timestamp", java.time.LocalDateTime.now());
         return ResponseEntity.badRequest().body(response);
     }
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<?> handleRuntimeException(RuntimeException ex) {
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
 }

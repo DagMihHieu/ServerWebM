@@ -54,7 +54,7 @@ public class UserService {
 
     public UserDTO register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email đã tồn tại");
+            throw new IllegalArgumentException("Email đã tồn tại");
         }
 
         User user = new User();
