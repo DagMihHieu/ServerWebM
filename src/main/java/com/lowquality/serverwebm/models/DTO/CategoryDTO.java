@@ -1,6 +1,5 @@
 package com.lowquality.serverwebm.models.DTO;
 
-import com.lowquality.serverwebm.models.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,8 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginResponse {
-    private String token;
-    private UserDTO user;
-
-} 
+public class CategoryDTO {
+    private Integer id;
+    private String category_name;
+}

@@ -42,15 +42,15 @@ public class AuthenticationController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout(Authentication authentication) {
-        if (authentication != null) {
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Đăng xuất thành công");
-            return ResponseEntity.ok(response);
-        }
-        return ResponseEntity.badRequest().body("No active session");
-    }
+//    @PostMapping("/logout")
+//    public ResponseEntity<?> logout(Authentication authentication) {
+//        if (authentication != null) {
+//            Map<String, String> response = new HashMap<>();
+//            response.put("message", "Đăng xuất thành công");
+//            return ResponseEntity.ok(response);
+//        }
+//        return ResponseEntity.badRequest().body("No active session");
+//    }
 
     @GetMapping("/check-email")
     public ResponseEntity<Map<String, Boolean>> checkEmail(@RequestParam String email) {

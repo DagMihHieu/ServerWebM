@@ -5,29 +5,28 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.lowquality.serverwebm.models.DTO.LoginResponse;
 import com.lowquality.serverwebm.models.DTO.RegisterRequest;
 import com.lowquality.serverwebm.models.DTO.UserDTO;
-import com.lowquality.serverwebm.models.entity.Role;
 import com.lowquality.serverwebm.models.entity.User;
-import com.lowquality.serverwebm.repository.RoleRepository;
 import com.lowquality.serverwebm.repository.UserRepository;
 import com.lowquality.serverwebm.security.JwtService;
+
 @Service
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-    private final RoleRepository roleRepository;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, RoleRepository roleRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
-        this.roleRepository = roleRepository;
     }
 
     public List<UserDTO> getAllUsers() {
@@ -39,8 +38,12 @@ public class UserService {
 
     public LoginResponse login(String email, String password) {
         Optional<User> user = userRepository.findByEmail(email);
-        if (user.isEmpty() || !passwordEncoder.matches(password, user.get().getPassword())) {
-            throw new IllegalArgumentException("Email hoặc mật khẩu không chính xác");
+        if (user.isEmpty() ) {
+            throw new IllegalArgumentException("Email không tồn tại");
+           
+        }
+        if ( !passwordEncoder.matches(password, user.get().getPassword())) {
+            throw new IllegalArgumentException("Mật khẩu không chính xác");
         }
         String token = jwtService.generateToken(user.get());
         return LoginResponse.builder()
@@ -51,24 +54,14 @@ public class UserService {
 
     public UserDTO register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email đã tồn tạitại");
+            throw new IllegalArgumentException("Email đã tồn tại");
         }
 
         User user = new User();
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setFullName(request.getFullName());
-        user.setActive(true);
-        
-        // Get or create USER role
-        Role userRole = roleRepository.findByName("USER")
-            .orElseGet(() -> {
-                Role newRole = new Role();
-                newRole.setName("USER");
-                return roleRepository.save(newRole);
-            });
-        user.setRoles(Collections.singleton(userRole));
-
+        user.setActive(true);   
         User savedUser = userRepository.save(user);
         return convertToDTO(savedUser);
     }
@@ -86,7 +79,6 @@ public class UserService {
             .fullName(user.getFullName())
             .avatarUrl(user.getAvatarUrl())
             .googleId(user.getGoogleId())
-            .roles(user.getRoles())
             .isActive(user.isActive())
             .build();
     }

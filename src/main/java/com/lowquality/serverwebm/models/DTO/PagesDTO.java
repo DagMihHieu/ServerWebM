@@ -1,6 +1,6 @@
 package com.lowquality.serverwebm.models.DTO;
 
-import com.lowquality.serverwebm.models.entity.User;
+import com.lowquality.serverwebm.models.entity.Chapter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginResponse {
-    private String token;
-    private UserDTO user;
-
-} 
+public class PagesDTO {
+    Integer id;
+    private Integer page_number;
+    private String page_img_url;
+}
