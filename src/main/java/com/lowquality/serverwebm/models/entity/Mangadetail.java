@@ -24,7 +24,7 @@ public class Mangadetail {
     private Author author_id;
     @Column(name = "cover_img")
     private String cover_img;
-    @Column(name = "description")
+    @Column(columnDefinition = "TEXT", name = "description")
     private String description;
     @ManyToMany
     @JoinTable(

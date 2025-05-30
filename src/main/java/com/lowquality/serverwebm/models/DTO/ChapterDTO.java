@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -14,4 +16,5 @@ public class ChapterDTO {
     private String chapter_name;
     private Integer chap_number;
     private MangadetailDTO manga_id;
+
 }

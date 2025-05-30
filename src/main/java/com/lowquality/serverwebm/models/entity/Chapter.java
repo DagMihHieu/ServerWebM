@@ -3,6 +3,8 @@ package com.lowquality.serverwebm.models.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Entity
 @Table(name = "chapter")
@@ -14,7 +16,9 @@ public class Chapter {
     @Column(name = "chapter_title", length = 100)
     private String name;
     @Column(name = "chap_number")
-    private Integer chap_number;
+    private Integer chapNumber;
+    @OneToMany(mappedBy = "chapter", cascade = CascadeType.ALL)
+    List<Pages> pages;
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "manga_id")
     private Mangadetail manga;

@@ -2,6 +2,7 @@ package com.lowquality.serverwebm.security;
 
 import java.io.IOException;
 
+import org.springframework.http.HttpMethod;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -35,18 +36,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String userEmail;
-        
+
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
-        
+
         jwt = authHeader.substring(7);
         userEmail = jwtService.extractEmail(jwt);
-        
+
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
-            
+
             if (jwtService.isTokenValid(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                     userDetails,
@@ -61,4 +62,53 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         filterChain.doFilter(request, response);
     }
-} 
+//@Override
+//protected void doFilterInternal(
+//        @NonNull HttpServletRequest request,
+//        @NonNull HttpServletResponse response,
+//        @NonNull FilterChain filterChain
+//) throws ServletException, IOException {
+//
+//    String path = request.getRequestURI();
+//    String method = request.getMethod();
+//
+//    if ("GET".equalsIgnoreCase(method) || "OPTIONS".equalsIgnoreCase(method) ||
+//            path.startsWith("/api/auth") || path.startsWith("/oauth2")) {
+//        // Bỏ qua filter cho GET, OPTIONS và các endpoint public
+//        filterChain.doFilter(request, response);
+//        return;
+//    }
+//
+//    final String authHeader = request.getHeader("Authorization");
+//    final String jwt;
+//    final String userEmail;
+//
+//    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+//        filterChain.doFilter(request, response);
+//        return;
+//    }
+//
+//    jwt = authHeader.substring(7);
+//    userEmail = jwtService.extractEmail(jwt);
+//
+//    if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+//        UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+//
+//        if (jwtService.isTokenValid(jwt, userDetails)) {
+//            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+//                    userDetails,
+//                    null,
+//                    userDetails.getAuthorities()
+//            );
+//            authToken.setDetails(
+//                    new WebAuthenticationDetailsSource().buildDetails(request)
+//            );
+//            SecurityContextHolder.getContext().setAuthentication(authToken);
+//        }
+//    }
+//    System.out.println("Method: " + method + ", Path: " + path);
+//    System.out.println("AuthHeader: " + authHeader);
+//    filterChain.doFilter(request, response);
+//}
+
+}
