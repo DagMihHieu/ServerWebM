@@ -13,7 +13,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class PageService {
-    private final PagesRepository pagesRepository;
+    @Autowired
+    PagesRepository pagesRepository;
     @Autowired
     ChapterRepository chapterRepository;
     public PageService(PagesRepository pagesRepository) {
@@ -34,6 +35,9 @@ public class PageService {
         return pagesRepository.findByChapter_id(chapter.getId()).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
+    }
+    public Pages savePage(Pages page) {
+        return pagesRepository.save(page);
     }
 //    public List<PagesDTO> getPagesOfChapter(Integer mangaId, Integer chapterNum) {
 //        Chapter chapter = null;

@@ -1,6 +1,7 @@
 package com.lowquality.serverwebm.controller;
 
 import com.lowquality.serverwebm.models.DTO.ChapterDTO;
+import com.lowquality.serverwebm.models.DTO.CreateMangaRequest;
 import com.lowquality.serverwebm.models.DTO.MangadetailDTO;
 import com.lowquality.serverwebm.models.DTO.PagesDTO;
 import com.lowquality.serverwebm.service.ChapterService;
@@ -64,16 +65,11 @@ public class MangaController {
     public ResponseEntity<MangadetailDTO> getMangaById(@PathVariable Integer id) {
         return ResponseEntity.ok(mangaService.getMangaById(id));
     }
-    @GetMapping("/{id}/chapter")
-    public ResponseEntity<List<ChapterDTO>> getAllChapter(@PathVariable Integer id) {
-        return ResponseEntity.ok(chapterService.getChaptersByMangaId(id));
-    }
-    @GetMapping("/{mangaId}/chapter/{chapterNum}")
-    public ResponseEntity<List<PagesDTO>> getChapterPages(
-            @PathVariable Integer mangaId,
-            @PathVariable Integer chapterNum
-    ) {
-        return ResponseEntity.ok(pageService.getPagesOfChapter(mangaId,chapterNum));
-    }
 
+    // Thêm vào MangaController.java
+    @PostMapping
+    public ResponseEntity<MangadetailDTO> createManga(
+            @RequestBody CreateMangaRequest request) {
+        return ResponseEntity.ok(mangaService.addManga(request));
+    }
 }

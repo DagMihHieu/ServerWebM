@@ -1,10 +1,7 @@
 package com.lowquality.serverwebm.service;
 
 import com.lowquality.serverwebm.models.DTO.*;
-import com.lowquality.serverwebm.models.entity.Author;
-import com.lowquality.serverwebm.models.entity.Category;
-import com.lowquality.serverwebm.models.entity.Chapter;
-import com.lowquality.serverwebm.models.entity.Mangadetail;
+import com.lowquality.serverwebm.models.entity.*;
 import com.lowquality.serverwebm.repository.CategoriesRepository;
 import com.lowquality.serverwebm.repository.ChapterRepository;
 import com.lowquality.serverwebm.repository.MangadetailRepository;
@@ -14,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -123,7 +121,7 @@ public class MangaService {
         // Start with all manga
         List<Mangadetail> mangaList = mangadetailRepository.findAll();
 
-        // Apply filters sequentially
+        // Apply filters
         if (search != null && !search.isEmpty()) {
             mangaList = mangaList.stream()
                     .filter(m -> m.getName().toLowerCase().contains(search.toLowerCase()))
@@ -147,4 +145,35 @@ public class MangaService {
                 .map(this::convertMangadetailToDTO)
                 .collect(Collectors.toList());
     }
+
+public MangadetailDTO addManga(CreateMangaRequest request) {
+    // Tạo manga mới
+    Mangadetail manga = new Mangadetail();
+    manga.setName(request.getName());
+    manga.setDescription(request.getDescription());
+    manga.setCover_img(request.getCoverImg());
+
+    // Set author nếu có
+    if (request.getAuthorId() != null) {
+        Author author = authorService.findById(request.getAuthorId());
+        manga.setAuthor_id(author);
+    }
+
+    // Set status nếu có
+    if (request.getStatusId() != null) {
+        Status status = statusService.findById(request.getStatusId());
+        manga.setStatus_id(status);
+    }
+
+    // Lưu manga
+    manga = mangadetailRepository.save(manga);
+
+    // Thêm categories nếu có
+    if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
+        this.addCategories(manga.getId(), request.getCategoryIds());
+    }
+    return convertMangadetailToDTO(manga);
+}
+
+
 }

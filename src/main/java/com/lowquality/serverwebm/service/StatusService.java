@@ -28,4 +28,9 @@ class StatusService {
                 .status_name(status.getStatus_name())
                 .build();
     }
+
+    public Status findById(Integer statusId) {
+        return statusRepository.findById(statusId)
+                .orElseThrow(() -> new IllegalArgumentException("Status not found: " + statusId));
+    }
 }
