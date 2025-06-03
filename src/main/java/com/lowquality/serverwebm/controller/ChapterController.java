@@ -55,5 +55,15 @@ public class ChapterController {
 
         return ResponseEntity.ok(chapterDTO);
     }
+@DeleteMapping("{chapterId}")
+public ResponseEntity<Void> deleteChapter(@PathVariable Integer chapterId) {
+        chapterService.deleteChapter(chapterId);
+        return ResponseEntity.noContent().build();
+    }
+ @DeleteMapping("{chapterId}/pages")
+    public ResponseEntity<Void> deletePagesOfChapter(@PathVariable Integer chapterId) {
+        pageService.deleteByChapterId(chapterId);
+    return ResponseEntity.noContent().build();
+    }
 
 }

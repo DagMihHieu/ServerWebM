@@ -79,9 +79,15 @@ public class ChapterService {
     public boolean isChapterNumberExists(Integer mangaId, Integer chapNumber) {
         return chapterRepository.existsByManga_IdAndChapNumber(mangaId, chapNumber);
     }
-    public void deleteChapter(Integer id) {
-    }
 
+    public void deleteChapter(Chapter chapter){
+        chapterRepository.delete(chapter);
+    }
+    public void deleteChapter(Integer id){
+        Chapter chapter = chapterRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Chapter not found"));
+        chapterRepository.delete(chapter);
+    }
     public ChapterDTO addChapterWithPages(
             String chapterName,
             Integer chapterNumber,

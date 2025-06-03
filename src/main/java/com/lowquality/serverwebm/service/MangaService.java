@@ -16,28 +16,30 @@ import java.util.stream.Collectors;
 
 @Service
 public class MangaService {
-    private final MangadetailRepository mangadetailRepository;
-    private final ChapterRepository chapterRepository;
-    private final CategoryService categoryService;
-    private final AuthorService authorService;
-    private final StatusService statusService;
-
     @Autowired
-    MangaService(MangadetailRepository mangadetailRepository, ChapterRepository chapterRepository, AuthorService authorService, CategoryService categoryService, StatusService statusService) {
-        this.mangadetailRepository = mangadetailRepository;
-        this.chapterRepository = chapterRepository;
-        this.categoryService = categoryService;
-        this.authorService = authorService;
-        this.statusService = statusService;
-    }
+    MangadetailRepository mangadetailRepository;
+    @Autowired
+    ChapterRepository chapterRepository;
+    @Autowired
+    CategoryService categoryService;
+    @Autowired
+    AuthorService authorService;
+    @Autowired
+    StatusService statusService;
+//    @Autowired
+//    MangaService(MangadetailRepository mangadetailRepository, ChapterRepository chapterRepository, AuthorService authorService, CategoryService categoryService, StatusService statusService) {
+//        this.mangadetailRepository = mangadetailRepository;
+//        this.chapterRepository = chapterRepository;
+//        this.categoryService = categoryService;
+//        this.authorService = authorService;
+//        this.statusService = statusService;
+//    }
     public Mangadetail getMangaEntityById(Integer id) {
         return mangadetailRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Manga not found: " + id));
     }
-    public void deleteChapter(Chapter chapter) {
-        chapterRepository.delete(chapter);
-    }
-    public void deleteManga(Mangadetail mangadetail) {
+    public void deleteManga(Integer id) {
+        Mangadetail mangadetail = this.getMangaEntityById(id);
         mangadetailRepository.delete(mangadetail);
     }
     public void addCategories(Integer mangaId, List<Integer> categoryIds) {

@@ -36,8 +36,12 @@ public class PageService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
-    public Pages savePage(Pages page) {
-        return pagesRepository.save(page);
+    public void deleteByChapterId( Integer chapId ) {
+      List<Pages> pages = pagesRepository.findByChapter_id(chapId);
+        pagesRepository.deleteAll(pages);
+    }
+    public void savePage(Pages page) {
+        pagesRepository.save(page);
     }
 //    public List<PagesDTO> getPagesOfChapter(Integer mangaId, Integer chapterNum) {
 //        Chapter chapter = null;

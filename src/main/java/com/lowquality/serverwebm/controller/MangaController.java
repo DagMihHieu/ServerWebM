@@ -66,10 +66,16 @@ public class MangaController {
         return ResponseEntity.ok(mangaService.getMangaById(id));
     }
 
-    // Thêm vào MangaController.java
     @PostMapping
     public ResponseEntity<MangadetailDTO> createManga(
             @RequestBody CreateMangaRequest request) {
         return ResponseEntity.ok(mangaService.addManga(request));
+    }
+    @DeleteMapping("{mangaId}")
+    public ResponseEntity<Void> deleteManga(
+            @PathVariable Integer mangaId
+    ){
+        mangaService.deleteManga(mangaId);
+        return ResponseEntity.noContent().build();
     }
 }
