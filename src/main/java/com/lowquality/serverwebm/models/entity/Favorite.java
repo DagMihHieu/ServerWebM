@@ -11,8 +11,12 @@ public class Favorite {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private int id;
-    @Column(name = "user_id", nullable = false)
-    private int user_id;
-    @Column(name = "manga_id", nullable = false)
-    private int manga_id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manga_id", nullable = false)
+    private Mangadetail manga;
 }

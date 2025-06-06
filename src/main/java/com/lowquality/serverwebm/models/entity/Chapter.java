@@ -17,7 +17,7 @@ public class Chapter {
     private String name;
     @Column(name = "chap_number")
     private Integer chapNumber;
-    @OneToMany(mappedBy = "chapter", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "chapter", cascade = CascadeType.ALL,orphanRemoval = true)
     List<Pages> pages;
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "manga_id")
