@@ -9,6 +9,7 @@ import com.lowquality.serverwebm.models.entity.Pages;
 import com.lowquality.serverwebm.repository.ChapterRepository;
 import com.lowquality.serverwebm.repository.PagesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -72,7 +73,7 @@ public class ChapterService {
     }
     public ChapterDTO getChapterByMangaAndNumber(Integer mangaId, Integer chapNumber) {
         Chapter chapter = chapterRepository.findByManga_IdAndChapNumber(mangaId, chapNumber)
-                .orElseThrow(() -> new IllegalArgumentException("Chapter not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Chapter not found"));
         return convertToDTO(chapter);
     }
 

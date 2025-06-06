@@ -6,6 +6,7 @@ import com.lowquality.serverwebm.models.entity.Pages;
 import com.lowquality.serverwebm.repository.ChapterRepository;
 import com.lowquality.serverwebm.repository.PagesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,7 +31,7 @@ public class PageService {
     }
     public List<PagesDTO> getPagesOfChapter(Integer mangaId, Integer chapterNum) {
         Chapter chapter = chapterRepository.findByManga_IdAndChapNumber(mangaId, chapterNum)
-                .orElseThrow(() -> new IllegalArgumentException("Chapter not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Chapter not found"));
 
         return pagesRepository.findByChapter_id(chapter.getId()).stream()
                 .map(this::convertToDTO)

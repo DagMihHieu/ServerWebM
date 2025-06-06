@@ -2,16 +2,15 @@ package com.lowquality.serverwebm.service;
 
 import com.lowquality.serverwebm.models.DTO.*;
 import com.lowquality.serverwebm.models.entity.*;
-import com.lowquality.serverwebm.repository.CategoriesRepository;
 import com.lowquality.serverwebm.repository.ChapterRepository;
 import com.lowquality.serverwebm.repository.MangadetailRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+
 import java.util.stream.Collectors;
 
 @Service
@@ -36,7 +35,7 @@ public class MangaService {
 //    }
     public Mangadetail getMangaEntityById(Integer id) {
         return mangadetailRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Manga not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Manga not found: " + id));
     }
     public void deleteManga(Integer id) {
         Mangadetail mangadetail = this.getMangaEntityById(id);
@@ -44,18 +43,10 @@ public class MangaService {
     }
     public void addCategories(Integer mangaId, List<Integer> categoryIds) {
         Mangadetail manga = this.getMangaEntityById(mangaId);
-        if (manga == null) {
-            throw new IllegalArgumentException("Manga not found");
-        }
-
         List<Category> categories = new ArrayList<>();
         for (Integer categoryId : categoryIds) {
             Category category = categoryService.findById(categoryId);
-            if (category != null) {
                 categories.add(category);
-            } else {
-                throw new IllegalArgumentException("Category not found: " + categoryId);
-            }
         }
 
         // Thêm các category mới
@@ -66,20 +57,12 @@ public class MangaService {
     }
     public void removeCategoryFromManga(Integer mangaId, Integer categoryId) {
         Mangadetail manga = this.getMangaEntityById(mangaId);
-        if (manga == null) {
-            throw new IllegalArgumentException("Manga not found");
-        }
-
         manga.getCategories().removeIf(category -> category.getId().equals(categoryId));
         mangadetailRepository.save(manga);
     }
 
     public void addAuthorToManga(Integer mangaId, Integer authorId) {
         Mangadetail manga = this.getMangaEntityById(mangaId);
-        if (manga == null) {
-            throw new IllegalArgumentException("Manga not found");
-        }
-
         Author author = authorService.findById(authorId);
         manga.setAuthor_id(author);
         mangadetailRepository.save(manga);
@@ -93,9 +76,6 @@ public class MangaService {
 
     public MangadetailDTO getMangaById(Integer id) {
         Mangadetail manga = this.getMangaEntityById(id);
-        if (manga == null) {
-            throw new IllegalArgumentException("Manga not found: " + id);
-        }
         return convertMangadetailToDTO(manga);
     }
 

@@ -3,6 +3,7 @@ package com.lowquality.serverwebm.service;
 import com.lowquality.serverwebm.models.DTO.StatusDTO;
 import com.lowquality.serverwebm.models.entity.Status;
 import com.lowquality.serverwebm.repository.StatusRepository;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -31,6 +32,6 @@ class StatusService {
 
     public Status findById(Integer statusId) {
         return statusRepository.findById(statusId)
-                .orElseThrow(() -> new IllegalArgumentException("Status not found: " + statusId));
+                .orElseThrow(() -> new ResourceNotFoundException("Status not found: " + statusId));
     }
 }
