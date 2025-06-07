@@ -6,8 +6,10 @@ import com.lowquality.serverwebm.models.DTO.PagesDTO;
 import com.lowquality.serverwebm.models.entity.Chapter;
 import com.lowquality.serverwebm.models.entity.Mangadetail;
 import com.lowquality.serverwebm.models.entity.Pages;
+import com.lowquality.serverwebm.models.entity.User;
 import com.lowquality.serverwebm.repository.ChapterRepository;
 import com.lowquality.serverwebm.repository.PagesRepository;
+import com.lowquality.serverwebm.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
@@ -25,27 +27,30 @@ public class ChapterService {
     private final MangaService mangaService;
     private final ChapterRepository chapterRepository;
     private final PageService pageService;
-    public ChapterService(PagesRepository pagesRepository, ChapterRepository chapterRepository, MangaService mangaService, PageService pageService) {
+    private final PermissionService permissionService;
+
+    public ChapterService(PagesRepository pagesRepository, ChapterRepository chapterRepository, MangaService mangaService, PageService pageService, PermissionService permissionService) {
         this.pagesRepository = pagesRepository;
         this.chapterRepository = chapterRepository;
         this.mangaService = mangaService;
         this.pageService = pageService;
+        this.permissionService = permissionService;
     }
 
 
     public Chapter findById(Integer id) {
         return chapterRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Chapter not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Chapter not found: " + id));
     }
 
-    public ChapterDTO convertToDTO(Chapter chapter) {
+    private ChapterDTO convertToDTO(Chapter chapter) {
         if (chapter == null) {
             return null;
         }
 
         MangadetailDTO mangadetailDTO = null;
         if (chapter.getManga() != null) {
-            mangadetailDTO = mangaService.convertMangadetailToDTO(chapter.getManga());
+            mangadetailDTO = mangaService.getMangaById(chapter.getManga().getId());
         }
 
         return ChapterDTO.builder()
@@ -81,12 +86,10 @@ public class ChapterService {
         return chapterRepository.existsByManga_IdAndChapNumber(mangaId, chapNumber);
     }
 
-    public void deleteChapter(Chapter chapter){
-        chapterRepository.delete(chapter);
-    }
     public void deleteChapter(Integer id){
-        Chapter chapter = chapterRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Chapter not found"));
+        User user = SecurityUtils.getCurrentUser();
+        Chapter chapter = findById(id);
+        permissionService.checkUserPermission(user,chapter.getManga().getUploader().getId(),"xóa chap trong truyện này.");
         chapterRepository.delete(chapter);
     }
     public ChapterDTO addChapterWithPages(
@@ -94,9 +97,10 @@ public class ChapterService {
             Integer chapterNumber,
             Integer mangaId,
             List<MultipartFile> pages) {
-
+        User user = SecurityUtils.getCurrentUser();
         // Tạo chapter mới
         Mangadetail manga= mangaService.getMangaEntityById(mangaId);
+        permissionService.checkUserPermission(user,manga.getUploader().getId(),"thêm chap trong truyện này.");
         Chapter chapter = new Chapter();
         chapter.setName(chapterName);
         chapter.setChapNumber(chapterNumber);

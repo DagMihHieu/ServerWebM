@@ -30,12 +30,12 @@ public class CommentController {
         return ResponseEntity.ok(comments);
     }
 
-    // GET comment by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<CommentDTO> getCommentById(@PathVariable int id) {
-        CommentDTO comment = commentService.getCommentById(id);
-        return ResponseEntity.ok(comment);
-    }
+//    // GET comment by ID
+//    @GetMapping("/{id}")
+//    public ResponseEntity<CommentDTO> getCommentById(@PathVariable int id) {
+//        CommentDTO comment = commentService.getCommentById(id);
+//        return ResponseEntity.ok(comment);
+//    }
 
     // POST create a new comment
     @PostMapping
@@ -47,7 +47,7 @@ public class CommentController {
     // PUT update a comment
     @PutMapping("/{id}")
     public ResponseEntity<CommentDTO> updateComment(@PathVariable int id, @RequestBody CommentDTO commentDTO) {
-        commentDTO.setId(id); // gán ID từ path vào DTO
+        commentDTO.setId(id);
         CommentDTO updated = commentService.editComment(commentDTO);
         return ResponseEntity.ok(updated);
     }

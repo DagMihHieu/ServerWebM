@@ -31,6 +31,7 @@ public class MangaController {
     @GetMapping
     public ResponseEntity<List<MangadetailDTO>> getManga(
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) Integer authorId,
             @RequestParam(required = false) List<Integer> categoryIds,
             @RequestParam(required = false) Integer statusId) {
             List<MangadetailDTO> mangaList;
@@ -54,11 +55,11 @@ public class MangaController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{mangaId}/author/{authorId}")
+    @PostMapping("/{mangaId}/author")
     public ResponseEntity<Void> addAuthorToManga(
             @PathVariable Integer mangaId,
-            @PathVariable Integer authorId) {
-        mangaService.addAuthorToManga(mangaId, authorId);
+            @RequestParam String author) {
+        mangaService.addAuthorToManga(mangaId, author);
         return ResponseEntity.ok().build();
     }
     @GetMapping("/{id}")

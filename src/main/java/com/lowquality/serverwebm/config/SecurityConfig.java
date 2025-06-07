@@ -36,19 +36,19 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
 
-                        // Các endpoint auth cho phép tất cả
-                        .requestMatchers("/api/auth/**").permitAll()
-
-                        // /api/users/**: chỉ ADMIN và MOD
-                        .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "MOD")
-
-                        // Các API public cho phép GET
-                        .requestMatchers(HttpMethod.GET, "/api/manga/**", "/api/categories/**", "/api/authors/**").permitAll()
-
-                        // Các API này: POST, PUT, DELETE chỉ ADMIN và MOD
-                        .requestMatchers(HttpMethod.POST, "/api/manga/**", "/api/categories/**", "/api/authors/**").hasAnyRole("ADMIN", "MOD")
-                        .requestMatchers(HttpMethod.PUT, "/api/manga/**", "/api/categories/**", "/api/authors/**").hasAnyRole("ADMIN", "MOD")
-                        .requestMatchers(HttpMethod.DELETE, "/api/manga/**", "/api/categories/**", "/api/authors/**").hasAnyRole("ADMIN", "MOD")
+//                        // Các endpoint auth cho phép tất cả
+//                        .requestMatchers("/api/auth/**").permitAll()
+//
+//                        // /api/users/**: chỉ ADMIN và MOD
+//                        .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "MOD")
+//
+//                        // Các API public cho phép GET
+//                        .requestMatchers(HttpMethod.GET, "/api/manga/**", "/api/categories/**", "/api/authors/**").permitAll()
+//
+//                        // Các API này: POST, PUT, DELETE chỉ ADMIN và MOD
+//                        .requestMatchers(HttpMethod.POST, "/api/manga/**", "/api/categories/**", "/api/authors/**").hasAnyRole("ADMIN", "MOD")
+//                        .requestMatchers(HttpMethod.PUT, "/api/manga/**", "/api/categories/**", "/api/authors/**").hasAnyRole("ADMIN", "MOD")
+//                        .requestMatchers(HttpMethod.DELETE, "/api/manga/**", "/api/categories/**", "/api/authors/**").hasAnyRole("ADMIN", "MOD")
 
                         // Mọi request khác cần xác thực
                         .anyRequest().permitAll()

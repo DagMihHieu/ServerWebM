@@ -4,8 +4,10 @@ import com.lowquality.serverwebm.models.DTO.*;
 import com.lowquality.serverwebm.models.entity.*;
 import com.lowquality.serverwebm.repository.ChapterRepository;
 import com.lowquality.serverwebm.repository.MangadetailRepository;
+import com.lowquality.serverwebm.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -25,7 +27,12 @@ public class MangaService {
     AuthorService authorService;
     @Autowired
     StatusService statusService;
-//    @Autowired
+    @Autowired
+    private PermissionService permissionService;
+    @Autowired
+    private UserService userService;
+
+    //    @Autowired
 //    MangaService(MangadetailRepository mangadetailRepository, ChapterRepository chapterRepository, AuthorService authorService, CategoryService categoryService, StatusService statusService) {
 //        this.mangadetailRepository = mangadetailRepository;
 //        this.chapterRepository = chapterRepository;
@@ -38,11 +45,15 @@ public class MangaService {
                 .orElseThrow(() -> new ResourceNotFoundException("Manga not found: " + id));
     }
     public void deleteManga(Integer id) {
-        Mangadetail mangadetail = this.getMangaEntityById(id);
-        mangadetailRepository.delete(mangadetail);
+        User user = SecurityUtils.getCurrentUser();
+        Mangadetail manga = this.getMangaEntityById(id);
+        permissionService.checkUserPermission(user,manga.getUploader().getId(),"xóa truyện này");
+        mangadetailRepository.delete(manga);
     }
     public void addCategories(Integer mangaId, List<Integer> categoryIds) {
+        User user = SecurityUtils.getCurrentUser();
         Mangadetail manga = this.getMangaEntityById(mangaId);
+        permissionService.checkUserPermission(user,manga.getUploader().getId(),"cập nhật danh mục");
         List<Category> categories = new ArrayList<>();
         for (Integer categoryId : categoryIds) {
             Category category = categoryService.findById(categoryId);
@@ -55,15 +66,23 @@ public class MangaService {
         // Lưu lại
         mangadetailRepository.save(manga);
     }
+
     public void removeCategoryFromManga(Integer mangaId, Integer categoryId) {
+        User user = SecurityUtils.getCurrentUser();
+
         Mangadetail manga = this.getMangaEntityById(mangaId);
+        permissionService.checkUserPermission(user,manga.getUploader().getId(),"Xóa danh mục");
         manga.getCategories().removeIf(category -> category.getId().equals(categoryId));
         mangadetailRepository.save(manga);
     }
+// cập nhật tác giả
+    public void addAuthorToManga(Integer mangaId, String authorName) {
+        User user = SecurityUtils.getCurrentUser();
 
-    public void addAuthorToManga(Integer mangaId, Integer authorId) {
         Mangadetail manga = this.getMangaEntityById(mangaId);
-        Author author = authorService.findById(authorId);
+        permissionService.checkUserPermission(user,manga.getUploader().getId(),"cập nhật tác giả");
+        Author author = new Author();
+        author.setAuthor_name(authorName);
         manga.setAuthor_id(author);
         mangadetailRepository.save(manga);
     }
@@ -79,15 +98,15 @@ public class MangaService {
         return convertMangadetailToDTO(manga);
     }
 
-    public MangadetailDTO convertMangadetailToDTO(Mangadetail mangadetail) {
-        AuthorDTO authorDTO = authorService.convertToDTO(mangadetail.getAuthor_id());
+    private MangadetailDTO convertMangadetailToDTO(Mangadetail mangadetail) {
+        AuthorDTO authorDTO = authorService.getAuthorById(mangadetail.getAuthor_id().getId());
 
         List<CategoryDTO> categoryDTOs = mangadetail.getCategories().stream()
                 .map(categoryService::convertToDTO)
                 .collect(Collectors.toList());
 
         StatusDTO statusDTO = statusService.convertToDTO(mangadetail.getStatus_id());
-
+        UserDTO userDTO = userService.getUserById(mangadetail.getUploader().getId());
         return MangadetailDTO.builder()
                 .id(mangadetail.getId())
                 .name(mangadetail.getName())
@@ -129,33 +148,35 @@ public class MangaService {
     }
 
 public MangadetailDTO addManga(CreateMangaRequest request) {
-    // Tạo manga mới
-    Mangadetail manga = new Mangadetail();
-    manga.setName(request.getName());
-    manga.setDescription(request.getDescription());
-    manga.setCover_img(request.getCoverImg());
+        User user = SecurityUtils.getCurrentUser();
+        permissionService.checkAddMangaPermission(user);
+        // Tạo manga mới
+        Mangadetail manga = new Mangadetail();
+        manga.setName(request.getName());
+        manga.setDescription(request.getDescription());
+        manga.setCover_img(request.getCoverImg());
 
-    // Set author nếu có
-    if (request.getAuthorId() != null) {
-        Author author = authorService.findById(request.getAuthorId());
-        manga.setAuthor_id(author);
+        // Set author nếu có
+        if (request.getAuthorId() != null) {
+            Author author = authorService.findById(request.getAuthorId());
+            manga.setAuthor_id(author);
+        }
+
+        // Set status nếu có
+        if (request.getStatusId() != null) {
+            Status status = statusService.findById(request.getStatusId());
+            manga.setStatus_id(status);
+        }
+
+        // Lưu manga
+        manga = mangadetailRepository.save(manga);
+
+        // Thêm categories nếu có
+        if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
+            this.addCategories(manga.getId(), request.getCategoryIds());
+        }
+        return convertMangadetailToDTO(manga);
     }
-
-    // Set status nếu có
-    if (request.getStatusId() != null) {
-        Status status = statusService.findById(request.getStatusId());
-        manga.setStatus_id(status);
-    }
-
-    // Lưu manga
-    manga = mangadetailRepository.save(manga);
-
-    // Thêm categories nếu có
-    if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
-        this.addCategories(manga.getId(), request.getCategoryIds());
-    }
-    return convertMangadetailToDTO(manga);
-}
 
 
 }

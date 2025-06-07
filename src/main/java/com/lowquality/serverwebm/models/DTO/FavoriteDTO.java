@@ -1,5 +1,6 @@
 package com.lowquality.serverwebm.models.DTO;
 
+import com.lowquality.serverwebm.models.entity.Mangadetail;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class FavoriteDTO {
     private Integer id;
-    private UserDTO user_id;
-    private MangadetailDTO manga_id;
+    private Integer user_id;
+    private MangadetailDTO manga;
 
 }

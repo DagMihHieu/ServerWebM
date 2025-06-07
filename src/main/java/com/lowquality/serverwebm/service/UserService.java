@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.lowquality.serverwebm.models.entity.Role;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -57,23 +58,26 @@ public class UserService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email đã tồn tại");
         }
-
+        Role role = Role.USER;
         User user = new User();
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setFullName(request.getFullName());
-        user.setActive(true);   
+        user.setActive(true);
+        user.setRole(role);
         User savedUser = userRepository.save(user);
         return convertToDTO(savedUser);
     }
-
+    public User findById(Integer id){
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
     public UserDTO getUserById(int id) {
-        User user = userRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return convertToDTO(user);
+
+        return convertToDTO(findById(id));
     }
 
-    private UserDTO convertToDTO(User user) {
+    private   UserDTO convertToDTO(User user) {
         return UserDTO.builder()
             .id(user.getId())
             .email(user.getEmail())

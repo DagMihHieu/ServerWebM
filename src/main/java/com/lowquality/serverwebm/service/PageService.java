@@ -22,7 +22,7 @@ public class PageService {
         this.pagesRepository = pagesRepository;
     }
 
-    public PagesDTO convertToDTO(Pages pages){
+    private PagesDTO convertToDTO(Pages pages){
         return PagesDTO.builder()
                 .id(pages.getId())
                 .page_number(pages.getPage_number())

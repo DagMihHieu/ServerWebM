@@ -8,7 +8,10 @@ import com.lowquality.serverwebm.models.entity.User;
 
 import com.lowquality.serverwebm.repository.CommentRepository;
 import com.lowquality.serverwebm.repository.UserRepository;
+import com.lowquality.serverwebm.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,6 +26,8 @@ public class CommentService {
     private UserRepository userRepository;
     @Autowired
     private ChapterService chapterService;
+    @Autowired
+    private PermissionService permissionService;
 
     public List<CommentDTO> getAllCommentInChapter(int chapterId) {
         return commentRepository.findByChapter_Id(chapterId).stream()
@@ -30,7 +35,7 @@ public class CommentService {
                 .collect(Collectors.toList());
     }
     public List<CommentDTO> getAllCommentInManga(int mangaId) {
-        return commentRepository.findByChapter_Id(mangaId).stream()
+        return commentRepository.findByManga_Id(mangaId).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
@@ -38,12 +43,16 @@ public class CommentService {
         return convertToDTO(findCommentById(id));
     }
     public void deleteCommentById(int id) {
-        commentRepository.deleteById(id);
+        Comment comment = findCommentById(id);
+        User currentUser = SecurityUtils.getCurrentUser();
+        permissionService.checkCommentPermission(currentUser, comment.getUser().getId(), "xóa");
+        commentRepository.delete(comment);
+
+
     }
     public CommentDTO createComment(CommentDTO commentDTO) {
         Comment comment = new Comment();
-        User user =  userRepository.findById(commentDTO.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        User user = SecurityUtils.getCurrentUser();
         Chapter chapter = chapterService.findById(commentDTO.getChapId());
         comment.setManga(chapter.getManga());
         comment.setContent(commentDTO.getComment());
@@ -53,21 +62,28 @@ public class CommentService {
     }
     public Comment findCommentById(int id) {
       return commentRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Comment not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Comment not found"));
     }
     public CommentDTO editComment(CommentDTO commentDTO) {
         Comment comment = findCommentById(commentDTO.getId());
-        User user =  userRepository.findById(commentDTO.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        Chapter chapter = chapterService.findById(commentDTO.getChapId());
+        User currentUser = SecurityUtils.getCurrentUser();
 
+        permissionService.checkCommentPermission(currentUser, comment.getUser().getId(), "chỉnh sửa");
         comment.setContent(commentDTO.getComment());
-        comment.setChapter(chapter);
-        comment.setManga(chapter.getManga());
-        comment.setUser(user);
         return convertToDTO(commentRepository.save(comment));
     }
     private CommentDTO convertToDTO(Comment comment) {
+        // hàm này chưa dùng
+//        if (comment.isDelete){
+//            return CommentDTO.builder()
+//                    .id(comment.getId())
+//                    .chapId(comment.getChapter().getId())
+//                    .mangaId(comment.getManga().getId())
+//                    .userId(comment.getUser().getId())
+//                    .comment("Comment này đã bị xóa")
+//                    .build();
+//        }
+
         return CommentDTO.builder()
                 .id(comment.getId())
                 .chapId(comment.getChapter().getId())
@@ -76,4 +92,5 @@ public class CommentService {
                 .comment(comment.getContent())
                 .build();
     }
+
 }

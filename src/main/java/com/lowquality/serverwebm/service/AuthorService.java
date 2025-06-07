@@ -21,7 +21,7 @@ public class AuthorService {
     public List<AuthorDTO> getAllAuthors(){
         return authorRepository.findAll().stream().map(this::convertToDTO).collect(Collectors.toList());
     }
-    public AuthorDTO convertToDTO(Author author){
+    private AuthorDTO convertToDTO(Author author){
         return AuthorDTO.builder()
                 .id(author.getId())
                 .author_name(author.getAuthor_name())
@@ -38,5 +38,8 @@ public class AuthorService {
     public Author findById(Integer id) {
         return authorRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Author not found: " + id));
+    }
+    public AuthorDTO getAuthorById(Integer id) {
+        return convertToDTO(findById(id));
     }
 }
