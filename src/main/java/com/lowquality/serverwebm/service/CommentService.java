@@ -4,6 +4,7 @@ import com.lowquality.serverwebm.models.DTO.CommentDTO;
 
 import com.lowquality.serverwebm.models.entity.Chapter;
 import com.lowquality.serverwebm.models.entity.Comment;
+import com.lowquality.serverwebm.models.entity.Mangadetail;
 import com.lowquality.serverwebm.models.entity.User;
 
 import com.lowquality.serverwebm.repository.CommentRepository;
@@ -23,11 +24,11 @@ public class CommentService {
     @Autowired
     private CommentRepository commentRepository;
     @Autowired
-    private UserRepository userRepository;
-    @Autowired
     private ChapterService chapterService;
     @Autowired
     private PermissionService permissionService;
+    @Autowired
+    private MangaService mangaService;
 
     public List<CommentDTO> getAllCommentInChapter(int chapterId) {
         return commentRepository.findByChapter_Id(chapterId).stream()
@@ -42,22 +43,33 @@ public class CommentService {
     public CommentDTO getCommentById(int id) {
         return convertToDTO(findCommentById(id));
     }
-    public void deleteCommentById(int id) {
+//    public void deleteCommentById(int id) {
+//        Comment comment = findCommentById(id);
+//        User currentUser = SecurityUtils.getCurrentUser();
+//        permissionService.checkCommentPermission(currentUser, comment.getUser().getId(), "xóa");
+//        commentRepository.delete(comment);
+//    }
+    public CommentDTO deleteCommentById(int id) {
         Comment comment = findCommentById(id);
         User currentUser = SecurityUtils.getCurrentUser();
         permissionService.checkCommentPermission(currentUser, comment.getUser().getId(), "xóa");
-        commentRepository.delete(comment);
-
-
+        comment.setIsDeleted(true);
+        return convertToDTO(commentRepository.save(comment));
     }
     public CommentDTO createComment(CommentDTO commentDTO) {
         Comment comment = new Comment();
         User user = SecurityUtils.getCurrentUser();
-        Chapter chapter = chapterService.findById(commentDTO.getChapId());
-        comment.setManga(chapter.getManga());
+        Mangadetail manga = mangaService.getMangaEntityById(commentDTO.getMangaId());
+        comment.setManga(manga);
         comment.setContent(commentDTO.getComment());
-        comment.setChapter(chapter);
+        if (commentDTO.getChapId() != null) {
+            Chapter chapter = chapterService.findById(commentDTO.getChapId());
+            comment.setChapter(chapter);
+        } else {
+            comment.setChapter(null);
+        }
         comment.setUser(user);
+        comment.setIsDeleted(false);
         return convertToDTO(commentRepository.save(comment));
     }
     public Comment findCommentById(int id) {
@@ -73,23 +85,22 @@ public class CommentService {
         return convertToDTO(commentRepository.save(comment));
     }
     private CommentDTO convertToDTO(Comment comment) {
-        // hàm này chưa dùng
-//        if (comment.isDelete){
-//            return CommentDTO.builder()
-//                    .id(comment.getId())
-//                    .chapId(comment.getChapter().getId())
-//                    .mangaId(comment.getManga().getId())
-//                    .userId(comment.getUser().getId())
-//                    .comment("Comment này đã bị xóa")
-//                    .build();
-//        }
+        if (comment.getIsDeleted()){
+            return CommentDTO.builder()
+                    .id(comment.getId())
+                    .chapId(comment.getChapter() != null ? comment.getChapter().getId() : null)
+                    .mangaId(comment.getManga().getId())
+                    .comment("Comment này đã bị xóa")
+                    .isDeleted(comment.getIsDeleted())
+                    .build();
+        }
 
         return CommentDTO.builder()
                 .id(comment.getId())
-                .chapId(comment.getChapter().getId())
+                .chapId(comment.getChapter() != null ? comment.getChapter().getId() : null)
                 .mangaId(comment.getManga().getId())
-                .userId(comment.getUser().getId())
                 .comment(comment.getContent())
+                .isDeleted(comment.getIsDeleted())
                 .build();
     }
 

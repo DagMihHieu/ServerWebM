@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class CommentDTO {
     private Integer id;
     private String comment;
-    private Integer userId;
     private Integer mangaId;
     private Integer chapId;
+    private boolean isDeleted;
 }

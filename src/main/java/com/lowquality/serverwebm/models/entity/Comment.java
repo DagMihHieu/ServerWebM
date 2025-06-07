@@ -13,7 +13,7 @@ public class Comment {
     @Column(columnDefinition = "TEXT",name= "Content")
     private String content;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chapter_id", nullable = false)
+    @JoinColumn(name = "chapter_id", nullable = true)
     private Chapter chapter;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manga_id", nullable = false)
@@ -21,5 +21,11 @@ public class Comment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+    @Column(name="isDeleted")
+    private Boolean isDeleted;
+    @PrePersist
+    protected void onCreate() {
+        this.isDeleted = false;
+    }
 
 }

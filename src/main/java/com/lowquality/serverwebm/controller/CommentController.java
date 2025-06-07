@@ -39,7 +39,9 @@ public class CommentController {
 
     // POST create a new comment
     @PostMapping
-    public ResponseEntity<CommentDTO> createComment(@RequestBody CommentDTO commentDTO) {
+    public ResponseEntity<CommentDTO> createComment(
+   @RequestBody CommentDTO commentDTO
+    ) {
         CommentDTO created = commentService.createComment(commentDTO);
         return ResponseEntity.ok(created);
     }
@@ -54,8 +56,8 @@ public class CommentController {
 
     // DELETE comment by ID
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteComment(@PathVariable int id) {
-        commentService.deleteCommentById(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<CommentDTO> deleteComment(@PathVariable int id) {
+
+        return ResponseEntity.ok(commentService.deleteCommentById(id));
     }
 }
