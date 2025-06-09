@@ -4,6 +4,7 @@ import com.lowquality.serverwebm.models.DTO.CategoryDTO;
 import com.lowquality.serverwebm.models.entity.Category;
 
 import com.lowquality.serverwebm.repository.CategoriesRepository;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -48,7 +49,7 @@ public class CategoryService {
         if (category.isPresent()) {
             return category.get();
         } else {
-            throw new IllegalArgumentException("Category not found: " + categoryId);
+            throw new ResourceNotFoundException("Category not found: " + categoryId);
         }
     }
     public List<CategoryDTO> getCategoriesByMangaId(Integer mangaId) {

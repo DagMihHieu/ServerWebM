@@ -6,11 +6,19 @@ import com.lowquality.serverwebm.models.DTO.PagesDTO;
 import com.lowquality.serverwebm.models.entity.Chapter;
 import com.lowquality.serverwebm.models.entity.Mangadetail;
 import com.lowquality.serverwebm.models.entity.Pages;
+import com.lowquality.serverwebm.models.entity.User;
 import com.lowquality.serverwebm.repository.ChapterRepository;
 import com.lowquality.serverwebm.repository.PagesRepository;
+import com.lowquality.serverwebm.util.SecurityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -18,27 +26,31 @@ public class ChapterService {
     private final PagesRepository pagesRepository;
     private final MangaService mangaService;
     private final ChapterRepository chapterRepository;
+    private final PageService pageService;
+    private final PermissionService permissionService;
 
-    public ChapterService(PagesRepository pagesRepository, ChapterRepository chapterRepository, MangaService mangaService) {
+    public ChapterService(PagesRepository pagesRepository, ChapterRepository chapterRepository, MangaService mangaService, PageService pageService, PermissionService permissionService) {
         this.pagesRepository = pagesRepository;
         this.chapterRepository = chapterRepository;
         this.mangaService = mangaService;
+        this.pageService = pageService;
+        this.permissionService = permissionService;
     }
 
 
     public Chapter findById(Integer id) {
         return chapterRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Chapter not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Chapter not found: " + id));
     }
 
-    public ChapterDTO convertToDTO(Chapter chapter) {
+    private ChapterDTO convertToDTO(Chapter chapter) {
         if (chapter == null) {
             return null;
         }
 
         MangadetailDTO mangadetailDTO = null;
         if (chapter.getManga() != null) {
-            mangadetailDTO = mangaService.convertMangadetailToDTO(chapter.getManga());
+            mangadetailDTO = mangaService.getMangaById(chapter.getManga().getId());
         }
 
         return ChapterDTO.builder()
@@ -66,13 +78,63 @@ public class ChapterService {
     }
     public ChapterDTO getChapterByMangaAndNumber(Integer mangaId, Integer chapNumber) {
         Chapter chapter = chapterRepository.findByManga_IdAndChapNumber(mangaId, chapNumber)
-                .orElseThrow(() -> new IllegalArgumentException("Chapter not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Chapter not found"));
         return convertToDTO(chapter);
     }
 
     public boolean isChapterNumberExists(Integer mangaId, Integer chapNumber) {
         return chapterRepository.existsByManga_IdAndChapNumber(mangaId, chapNumber);
     }
-    public void deleteChapter(Integer id) {
+
+    public void deleteChapter(Integer id){
+        User user = SecurityUtils.getCurrentUser();
+        Chapter chapter = findById(id);
+        permissionService.checkUserPermission(user,chapter.getManga().getUploader().getId(),"xóa chap trong truyện này.");
+        chapterRepository.delete(chapter);
     }
+    public ChapterDTO addChapterWithPages(
+            String chapterName,
+            Integer chapterNumber,
+            Integer mangaId,
+            List<MultipartFile> pages) {
+        User user = SecurityUtils.getCurrentUser();
+        // Tạo chapter mới
+        Mangadetail manga= mangaService.getMangaEntityById(mangaId);
+        permissionService.checkUserPermission(user,manga.getUploader().getId(),"thêm chap trong truyện này.");
+        Chapter chapter = new Chapter();
+        chapter.setName(chapterName);
+        chapter.setChapNumber(chapterNumber);
+        chapter.setManga(manga); // Nếu chapter có liên kết với manga
+        chapter = chapterRepository.save(chapter);
+
+        // Tạo thư mục upload
+        String uploadPath = "D:/upload/chapter_" + chapter.getId();
+        File dir = new File(uploadPath);
+        if (!dir.exists()) dir.mkdirs();
+
+        // Lưu pages
+        int pageNum = 1;
+        for (MultipartFile file : pages) {
+            String fileName = file.getOriginalFilename();
+            String filePath = uploadPath + "/" + fileName;
+
+            try {
+                file.transferTo(new File(filePath));
+            } catch (IOException e) {
+                throw new RuntimeException("Cannot save file: " + fileName, e);
+            }
+
+            // Lưu page vào DB
+            Pages page = new Pages();
+            page.setChapter(chapter);
+            page.setPage_number(pageNum++); // Auto số page theo thứ tự upload
+            page.setPage_img_url(filePath.replace("\\", "/")); // Đường dẫn file
+
+            pageService.savePage(page);
+        }
+
+        // Trả về DTO
+        return convertToDTO(chapter);
+    }
+
 }

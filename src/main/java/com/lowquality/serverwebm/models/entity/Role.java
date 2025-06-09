@@ -7,6 +7,7 @@ import lombok.Data;
 @Entity
 @Table(name = "roles")
 public class Role {
+    public static final Role USER = new Role(0);
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id",nullable = false, unique = true)

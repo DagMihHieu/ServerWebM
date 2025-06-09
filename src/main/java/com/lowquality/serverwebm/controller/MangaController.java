@@ -1,6 +1,7 @@
 package com.lowquality.serverwebm.controller;
 
 import com.lowquality.serverwebm.models.DTO.ChapterDTO;
+import com.lowquality.serverwebm.models.DTO.CreateMangaRequest;
 import com.lowquality.serverwebm.models.DTO.MangadetailDTO;
 import com.lowquality.serverwebm.models.DTO.PagesDTO;
 import com.lowquality.serverwebm.service.ChapterService;
@@ -30,10 +31,11 @@ public class MangaController {
     @GetMapping
     public ResponseEntity<List<MangadetailDTO>> getManga(
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) Integer authorId,
             @RequestParam(required = false) List<Integer> categoryIds,
             @RequestParam(required = false) Integer statusId) {
             List<MangadetailDTO> mangaList;
-            mangaList = mangaService.filterManga(search, categoryIds, statusId);
+            mangaList = mangaService.filterManga(search, categoryIds, statusId,authorId);
         return ResponseEntity.ok(mangaList);
     }
 
@@ -53,27 +55,28 @@ public class MangaController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{mangaId}/author/{authorId}")
+    @PostMapping("/{mangaId}/author")
     public ResponseEntity<Void> addAuthorToManga(
             @PathVariable Integer mangaId,
-            @PathVariable Integer authorId) {
-        mangaService.addAuthorToManga(mangaId, authorId);
+            @RequestParam String author) {
+        mangaService.addAuthorToManga(mangaId, author);
         return ResponseEntity.ok().build();
     }
     @GetMapping("/{id}")
     public ResponseEntity<MangadetailDTO> getMangaById(@PathVariable Integer id) {
         return ResponseEntity.ok(mangaService.getMangaById(id));
     }
-    @GetMapping("/{id}/chapter")
-    public ResponseEntity<List<ChapterDTO>> getAllChapter(@PathVariable Integer id) {
-        return ResponseEntity.ok(chapterService.getChaptersByMangaId(id));
-    }
-    @GetMapping("/{mangaId}/chapter/{chapterNum}")
-    public ResponseEntity<List<PagesDTO>> getChapterPages(
-            @PathVariable Integer mangaId,
-            @PathVariable Integer chapterNum
-    ) {
-        return ResponseEntity.ok(pageService.getPagesOfChapter(mangaId,chapterNum));
-    }
 
+    @PostMapping
+    public ResponseEntity<MangadetailDTO> createManga(
+            @RequestBody CreateMangaRequest request) {
+        return ResponseEntity.ok(mangaService.addManga(request));
+    }
+    @DeleteMapping("{mangaId}")
+    public ResponseEntity<Void> deleteManga(
+            @PathVariable Integer mangaId
+    ){
+        mangaService.deleteManga(mangaId);
+        return ResponseEntity.noContent().build();
+    }
 }

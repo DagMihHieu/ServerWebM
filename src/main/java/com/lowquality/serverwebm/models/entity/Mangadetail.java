@@ -19,6 +19,9 @@ public class Mangadetail {
     private Integer id;
     @Column(name = "name", length = 100)
     private String name;
+    @ManyToOne
+    @JoinColumn(name ="user_id")
+    private User uploader;
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "author_id")
     private Author author_id;
