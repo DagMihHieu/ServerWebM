@@ -118,7 +118,7 @@ public class MangaService {
                 .build();
     }
     //filter
-    public List<MangadetailDTO> filterManga(String search, List<Integer> categoryIds, Integer statusId) {
+    public List<MangadetailDTO> filterManga(String search, List<Integer> categoryIds, Integer statusId, Integer authorId) {
         // Start with all manga
         List<Mangadetail> mangaList = mangadetailRepository.findAll();
 
@@ -139,6 +139,11 @@ public class MangaService {
         if (statusId != null) {
             mangaList = mangaList.stream()
                     .filter(m -> m.getStatus_id() != null && statusId.equals(m.getStatus_id().getId()))
+                    .collect(Collectors.toList());
+        }
+        if (authorId != null) {
+            mangaList = mangaList.stream()
+                    .filter(m -> m.getStatus_id() != null && authorId.equals(m.getAuthor_id().getId()))
                     .collect(Collectors.toList());
         }
 

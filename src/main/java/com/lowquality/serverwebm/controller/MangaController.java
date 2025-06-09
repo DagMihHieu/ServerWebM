@@ -35,7 +35,7 @@ public class MangaController {
             @RequestParam(required = false) List<Integer> categoryIds,
             @RequestParam(required = false) Integer statusId) {
             List<MangadetailDTO> mangaList;
-            mangaList = mangaService.filterManga(search, categoryIds, statusId);
+            mangaList = mangaService.filterManga(search, categoryIds, statusId,authorId);
         return ResponseEntity.ok(mangaList);
     }
 
