@@ -100,7 +100,6 @@ public class MangaService {
                 .collect(Collectors.toList());
 
         StatusDTO statusDTO = statusService.convertToDTO(mangadetail.getStatus_id());
-        UserDTO userDTO = userService.getUserById(mangadetail.getUploader().getId());
         return MangadetailDTO.builder()
                 .id(mangadetail.getId())
                 .name(mangadetail.getName())
@@ -108,6 +107,7 @@ public class MangaService {
                 .cover_img(mangadetail.getCover_img())
                 .id_author(authorDTO)
                 .id_category(categoryDTOs)
+                .uploader(mangadetail.getUploader().getFullName())
                 .id_status(statusDTO)
                 .build();
     }
@@ -148,12 +148,13 @@ public class MangaService {
 
 public MangadetailDTO addManga(CreateMangaRequest request) {
         permissionService.checkAddMangaPermission();
+        User user = SecurityUtils.getCurrentUser();
         // Tạo manga mới
         Mangadetail manga = new Mangadetail();
         manga.setName(request.getName());
         manga.setDescription(request.getDescription());
         manga.setCover_img(request.getCoverImg());
-
+        manga.setUploader(user);
         // Set author nếu có
         if (request.getAuthorId() != null) {
             Author author = authorService.findById(request.getAuthorId());
