@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.lowquality.serverwebm.models.DTO.AddUserDTO;
 import com.lowquality.serverwebm.models.entity.Role;
 import com.lowquality.serverwebm.util.SecurityUtils;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -28,12 +29,16 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final PermissionService permissionService;
-;
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, PermissionService permissionService, UserDetailsService userDetailsService) {
+    private final FileStorageService fileStorageService;
+    private final RoleService roleService;
+    ;
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, PermissionService permissionService, UserDetailsService userDetailsService, FileStorageService fileStorageService, RoleService roleService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.permissionService = permissionService;
+        this.fileStorageService = fileStorageService;
+        this.roleService = roleService;
     }
 
     public List<UserDTO> getAllUsers() {
@@ -101,8 +106,28 @@ public class UserService {
         userRepository.save(user);
         return convertToDTO(user);
     }
+    public UserDTO updateAvatar(Integer userId, MultipartFile avatar) {
+        User user = findById(userId);
+        permissionService.checkUserPermission(user.getId(), "bạn không có quyền cập nhật avatar");
 
+        if (user.getAvatarUrl() != null) {
+            fileStorageService.deleteFile(user.getAvatarUrl());
+        }
+
+        String subDirectory = "avatars/user_" + userId;
+        String filePath = fileStorageService.storeFile(avatar, subDirectory);
+
+        user.setAvatarUrl(filePath);
+        userRepository.save(user);
+
+        return convertToDTO(user);
+    }
     private   UserDTO convertToDTO(User user) {
+        String avatarUrl = user.getAvatarUrl();
+        if (avatarUrl != null) {
+            // Thay thế đường dẫn vật lý bằng URL public
+            avatarUrl = avatarUrl.replace("D:/upload", "/upload");
+        }
         return UserDTO.builder()
             .id(user.getId())
             .email(user.getEmail())
@@ -111,6 +136,19 @@ public class UserService {
             .googleId(user.getGoogleId())
             .isActive(user.isActive())
             .build();
+    }
+    public UserDTO addUser(AddUserDTO addUserDTO) {
+        User newUser = new User();
+        newUser.setFullName(addUserDTO.getUsername());
+        newUser.setEmail(addUserDTO.getEmail());
+        newUser.setPassword(passwordEncoder.encode(addUserDTO.getPassword()));
+        newUser.setActive(true);
+        Role role = roleService.findByRoleId(addUserDTO.getRoleId());
+        newUser.setRole(role);
+        userRepository.save(newUser);
+
+        return convertToDTO(newUser);
+
     }
 
     public boolean checkEmailExists(String email) {

@@ -2,6 +2,7 @@ package com.lowquality.serverwebm.controller;
 
 import java.util.List;
 
+import com.lowquality.serverwebm.models.DTO.AddUserDTO;
 import com.lowquality.serverwebm.models.entity.Mangadetail;
 import com.lowquality.serverwebm.service.PermissionService;
 import com.lowquality.serverwebm.util.SecurityUtils;
@@ -17,6 +18,7 @@ import com.lowquality.serverwebm.models.entity.User;
 import com.lowquality.serverwebm.service.UserService;
 
 import jakarta.validation.Valid;
+import org.springframework.web.multipart.MultipartFile;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -48,6 +50,18 @@ public class UserController {
         UserDTO bannedUser = userService.banUser(id);
         return ResponseEntity.ok(bannedUser);
     }
+    @PostMapping("/add")
+    public ResponseEntity<UserDTO> addUser(@RequestBody @Valid AddUserDTO addUserDTO) {
+        UserDTO newUser = userService.addUser(addUserDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
+    }
 
+    @PostMapping("/{userId}/avatar")
+    public ResponseEntity<UserDTO> updateAvatar(
+            @PathVariable Integer userId,
+            @RequestParam("avatar") MultipartFile avatar) {
+        UserDTO updatedUser = userService.updateAvatar(userId, avatar);
+        return ResponseEntity.ok(updatedUser);
+    }
 
 } 

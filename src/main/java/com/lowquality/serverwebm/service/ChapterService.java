@@ -28,13 +28,15 @@ public class ChapterService {
     private final ChapterRepository chapterRepository;
     private final PageService pageService;
     private final PermissionService permissionService;
+    private final FileStorageService fileStorageService;
 
-    public ChapterService(PagesRepository pagesRepository, ChapterRepository chapterRepository, MangaService mangaService, PageService pageService, PermissionService permissionService) {
+    public ChapterService(PagesRepository pagesRepository, ChapterRepository chapterRepository, MangaService mangaService, PageService pageService, PermissionService permissionService, FileStorageService fileStorageService) {
         this.pagesRepository = pagesRepository;
         this.chapterRepository = chapterRepository;
         this.mangaService = mangaService;
         this.pageService = pageService;
         this.permissionService = permissionService;
+        this.fileStorageService = fileStorageService;
     }
 
 
@@ -107,34 +109,23 @@ public class ChapterService {
         chapter.setManga(manga); // Nếu chapter có liên kết với manga
         chapter = chapterRepository.save(chapter);
 
-        // Tạo thư mục upload
-        String uploadPath = "D:/upload/chapter_" + chapter.getId();
-        File dir = new File(uploadPath);
-        if (!dir.exists()) dir.mkdirs();
-
-        // Lưu pages
+        // Thay thế phần xử lý file bằng service
+        String chapterSubDir = "chapter_" + chapter.getId();
         int pageNum = 1;
+
         for (MultipartFile file : pages) {
-            String fileName = file.getOriginalFilename();
-            String filePath = uploadPath + "/" + fileName;
+            String filePath = fileStorageService.storeFile(file, chapterSubDir);
 
-            try {
-                file.transferTo(new File(filePath));
-            } catch (IOException e) {
-                throw new RuntimeException("Cannot save file: " + fileName, e);
-            }
-
-            // Lưu page vào DB
             Pages page = new Pages();
             page.setChapter(chapter);
-            page.setPage_number(pageNum++); // Auto số page theo thứ tự upload
-            page.setPage_img_url(filePath.replace("\\", "/")); // Đường dẫn file
+            page.setPage_number(pageNum++);
+            page.setPage_img_url(filePath);
 
             pageService.savePage(page);
         }
 
-        // Trả về DTO
         return convertToDTO(chapter);
     }
+
 
 }
