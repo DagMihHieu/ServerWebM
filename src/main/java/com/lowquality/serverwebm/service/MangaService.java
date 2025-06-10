@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -125,8 +126,17 @@ public class MangaService {
 
         if (categoryIds != null && !categoryIds.isEmpty()) {
             mangaList = mangaList.stream()
-                    .filter(m -> m.getCategories().stream()
-                            .anyMatch(c -> categoryIds.contains(c.getId())))
+//                    .filter(m -> m.getCategories().stream()
+//                            .allMatch(c -> categoryIds.contains(c.getId())))
+//                    .collect(Collectors.toList());
+                    .filter(manga -> {
+                // Lấy ra danh sách ID category của manga hiện tại
+                Set<Integer> mangaCategoryIds = manga.getCategories().stream()
+                        .map(Category::getId)
+                        .collect(Collectors.toSet());
+                // Kiểm tra xem nó có chứa TẤT CẢ các ID được yêu cầu không
+                return mangaCategoryIds.containsAll(categoryIds);
+            })
                     .collect(Collectors.toList());
         }
 
