@@ -45,15 +45,13 @@ public class MangaService {
                 .orElseThrow(() -> new ResourceNotFoundException("Manga not found: " + id));
     }
     public void deleteManga(Integer id) {
-        User user = SecurityUtils.getCurrentUser();
         Mangadetail manga = this.getMangaEntityById(id);
-        permissionService.checkUserPermission(user,manga.getUploader().getId(),"xóa truyện này");
+        permissionService.checkUserPermission(manga.getUploader().getId(),"xóa truyện này");
         mangadetailRepository.delete(manga);
     }
     public void addCategories(Integer mangaId, List<Integer> categoryIds) {
-        User user = SecurityUtils.getCurrentUser();
         Mangadetail manga = this.getMangaEntityById(mangaId);
-        permissionService.checkUserPermission(user,manga.getUploader().getId(),"cập nhật danh mục");
+        permissionService.checkUserPermission(manga.getUploader().getId(),"cập nhật danh mục");
         List<Category> categories = new ArrayList<>();
         for (Integer categoryId : categoryIds) {
             Category category = categoryService.findById(categoryId);
@@ -68,19 +66,15 @@ public class MangaService {
     }
 
     public void removeCategoryFromManga(Integer mangaId, Integer categoryId) {
-        User user = SecurityUtils.getCurrentUser();
-
         Mangadetail manga = this.getMangaEntityById(mangaId);
-        permissionService.checkUserPermission(user,manga.getUploader().getId(),"Xóa danh mục");
+        permissionService.checkUserPermission(manga.getUploader().getId(),"Xóa danh mục");
         manga.getCategories().removeIf(category -> category.getId().equals(categoryId));
         mangadetailRepository.save(manga);
     }
 // cập nhật tác giả
     public void addAuthorToManga(Integer mangaId, String authorName) {
-        User user = SecurityUtils.getCurrentUser();
-
         Mangadetail manga = this.getMangaEntityById(mangaId);
-        permissionService.checkUserPermission(user,manga.getUploader().getId(),"cập nhật tác giả");
+        permissionService.checkUserPermission(manga.getUploader().getId(),"cập nhật tác giả");
         Author author = new Author();
         author.setAuthor_name(authorName);
         manga.setAuthor_id(author);
@@ -153,8 +147,7 @@ public class MangaService {
     }
 
 public MangadetailDTO addManga(CreateMangaRequest request) {
-        User user = SecurityUtils.getCurrentUser();
-        permissionService.checkAddMangaPermission(user);
+        permissionService.checkAddMangaPermission();
         // Tạo manga mới
         Mangadetail manga = new Mangadetail();
         manga.setName(request.getName());

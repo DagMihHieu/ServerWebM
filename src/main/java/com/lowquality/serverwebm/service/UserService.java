@@ -6,8 +6,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.lowquality.serverwebm.models.entity.Role;
+import com.lowquality.serverwebm.util.SecurityUtils;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,20 +20,24 @@ import com.lowquality.serverwebm.models.DTO.UserDTO;
 import com.lowquality.serverwebm.models.entity.User;
 import com.lowquality.serverwebm.repository.UserRepository;
 import com.lowquality.serverwebm.security.JwtService;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+    private final PermissionService permissionService;
+;
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, PermissionService permissionService, UserDetailsService userDetailsService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.permissionService = permissionService;
     }
 
     public List<UserDTO> getAllUsers() {
+        permissionService.onlyModAndAdmin("Lấy thông tin tất cả người dùng");
         List<User> users = userRepository.findAll();
         return users.stream()
             .map(this::convertToDTO)
@@ -53,7 +59,18 @@ public class UserService {
             .user(convertToDTO(user.get()))
             .build();
     }
-
+    public UserDTO updateUserInfo(UserDTO userDTO) {
+        User user = findById(userDTO.getId());
+        permissionService.checkUserPermission(user.getId(),"bạn không có quyền cập nhật thông tin");
+        user.setEmail(userDTO.getEmail());
+        user.setFullName(userDTO.getFullName());
+        userRepository.save(user);
+        return(convertToDTO(user));
+    }
+//    public void updateAvatar(Integer userId, MultipartFile avatar) {
+//        User user = findById(userId);
+//        permissionService.checkUserPermission(user.getId(),"bạn không có quyền cập nhật thông tin avatar");
+//    }
     public UserDTO register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email đã tồn tại");
@@ -73,8 +90,16 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
     public UserDTO getUserById(int id) {
-
-        return convertToDTO(findById(id));
+        User user= findById(id);
+        permissionService.checkUserPermission(user.getId(),"lấy thông tin của người dùng này");
+        return convertToDTO(user);
+    }
+    public UserDTO banUser(int id) {
+        permissionService.onlyModAndAdmin("Bạn không có quyền ban người dùng này");
+        User user = findById(id);
+        user.setActive(false);
+        userRepository.save(user);
+        return convertToDTO(user);
     }
 
     private   UserDTO convertToDTO(User user) {

@@ -51,8 +51,7 @@ public class CommentService {
 //    }
     public CommentDTO deleteCommentById(int id) {
         Comment comment = findCommentById(id);
-        User currentUser = SecurityUtils.getCurrentUser();
-        permissionService.checkCommentPermission(currentUser, comment.getUser().getId(), "xóa");
+        permissionService.checkCommentPermission( comment.getUser().getId(), "xóa");
         comment.setIsDeleted(true);
         return convertToDTO(commentRepository.save(comment));
     }
@@ -78,9 +77,7 @@ public class CommentService {
     }
     public CommentDTO editComment(CommentDTO commentDTO) {
         Comment comment = findCommentById(commentDTO.getId());
-        User currentUser = SecurityUtils.getCurrentUser();
-
-        permissionService.checkCommentPermission(currentUser, comment.getUser().getId(), "chỉnh sửa");
+        permissionService.checkCommentPermission( comment.getUser().getId(), "chỉnh sửa");
         comment.setContent(commentDTO.getComment());
         return convertToDTO(commentRepository.save(comment));
     }

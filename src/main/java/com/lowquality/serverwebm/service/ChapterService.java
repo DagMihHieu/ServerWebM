@@ -89,7 +89,7 @@ public class ChapterService {
     public void deleteChapter(Integer id){
         User user = SecurityUtils.getCurrentUser();
         Chapter chapter = findById(id);
-        permissionService.checkUserPermission(user,chapter.getManga().getUploader().getId(),"xóa chap trong truyện này.");
+        permissionService.checkUserPermission(chapter.getManga().getUploader().getId(),"xóa chap trong truyện này.");
         chapterRepository.delete(chapter);
     }
     public ChapterDTO addChapterWithPages(
@@ -100,7 +100,7 @@ public class ChapterService {
         User user = SecurityUtils.getCurrentUser();
         // Tạo chapter mới
         Mangadetail manga= mangaService.getMangaEntityById(mangaId);
-        permissionService.checkUserPermission(user,manga.getUploader().getId(),"thêm chap trong truyện này.");
+        permissionService.checkUserPermission(manga.getUploader().getId(),"thêm chap trong truyện này.");
         Chapter chapter = new Chapter();
         chapter.setName(chapterName);
         chapter.setChapNumber(chapterNumber);

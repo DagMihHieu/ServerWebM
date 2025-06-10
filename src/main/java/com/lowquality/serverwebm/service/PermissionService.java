@@ -1,15 +1,15 @@
 package com.lowquality.serverwebm.service;
 
+import com.lowquality.serverwebm.util.SecurityUtils;
 import org.springframework.stereotype.Service;
 import com.lowquality.serverwebm.models.entity.User;
 import org.springframework.security.access.AccessDeniedException;
 
 @Service
 public class PermissionService {
-    public void checkCommentPermission(User currentUser, int ownerId, String action) {
+    public void checkCommentPermission( int ownerId, String action) {
+        User currentUser = SecurityUtils.getCurrentUser();
         boolean isOwner = currentUser.getId().equals(ownerId);
-
-
         if (!isOwner && !isAdminOrMod(currentUser)) {
             throw new AccessDeniedException("Bạn không có quyền " + action + " comment này");
         }
@@ -19,18 +19,21 @@ public class PermissionService {
         String role = user.getRole().getName();
         return role.equals("ADMIN") || role.equals("MOD");
     }
-    public void checkUserPermission(User currentUser, int ownerId, String action ) {
+    public void checkUserPermission( int ownerId, String action ) {
+        User currentUser = SecurityUtils.getCurrentUser();
         boolean isOwner = currentUser.getId().equals(ownerId);
         if (!isOwner && !isAdminOrMod(currentUser)) {
             throw new AccessDeniedException("Bạn không có quyền " + action );
         }
     }
-    public void onlyModAndAdmin(User currentUser, String action) {
+    public void onlyModAndAdmin(String action) {
+        User currentUser = SecurityUtils.getCurrentUser();
         if (!isAdminOrMod(currentUser)) {
             throw new AccessDeniedException("Bạn không có quyền " + action );
         }
     }
-    public void checkAddMangaPermission(User currentUser ) {
+    public void checkAddMangaPermission( ) {
+        User currentUser = SecurityUtils.getCurrentUser();
         if ( !isUploader(currentUser) && !isAdminOrMod(currentUser)) {
             throw new AccessDeniedException("Bạn không có quyền thêm truyện." );
         }
