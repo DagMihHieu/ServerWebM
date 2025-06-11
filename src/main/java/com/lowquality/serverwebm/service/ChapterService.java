@@ -95,10 +95,14 @@ public class ChapterService {
         chapterRepository.delete(chapter);
     }
     public ChapterDTO addChapterWithPages(
+
             String chapterName,
             Integer chapterNumber,
             Integer mangaId,
             List<MultipartFile> pages) {
+        if (isChapterNumberExists(mangaId, chapterNumber)) {
+            throw new IllegalArgumentException("Chapter number already exists for this manga");
+        }
         User user = SecurityUtils.getCurrentUser();
         // Tạo chapter mới
         Mangadetail manga= mangaService.getMangaEntityById(mangaId);
