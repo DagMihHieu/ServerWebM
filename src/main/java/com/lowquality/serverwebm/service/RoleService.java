@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-class RoleService {
+public class RoleService {
  @Autowired
     private RoleRepository roleRepository;
 
@@ -21,7 +21,7 @@ class RoleService {
     }
     Role findByRoleId(Integer roleId) {
         return roleRepository.findById(roleId)
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Role ID " + roleId + " không tồn tại"));
     }
     public RoleDTO getRoleById(Integer id) {
         return convertToDTO(findByRoleId(id));

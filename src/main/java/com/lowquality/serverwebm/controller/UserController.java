@@ -2,7 +2,7 @@ package com.lowquality.serverwebm.controller;
 
 import java.util.List;
 
-import com.lowquality.serverwebm.models.DTO.AddUserDTO;
+import com.lowquality.serverwebm.models.DTO.*;
 import com.lowquality.serverwebm.models.entity.Mangadetail;
 import com.lowquality.serverwebm.service.PermissionService;
 import com.lowquality.serverwebm.util.SecurityUtils;
@@ -11,9 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.lowquality.serverwebm.models.DTO.LoginRequest;
-import com.lowquality.serverwebm.models.DTO.RegisterRequest;
-import com.lowquality.serverwebm.models.DTO.UserDTO;
 import com.lowquality.serverwebm.models.entity.User;
 import com.lowquality.serverwebm.service.UserService;
 
@@ -63,5 +60,19 @@ public class UserController {
         UserDTO updatedUser = userService.updateAvatar(userId, avatar);
         return ResponseEntity.ok(updatedUser);
     }
+    @PutMapping("/{userId}/change-role")
+    public ResponseEntity<UserDTO> changeUserRole(
+            @PathVariable int userId,
+            @RequestParam("roleId") int roleId) {
+        UserDTO updatedUser = userService.changeUserRole(userId, roleId);
+        return ResponseEntity.ok(updatedUser);
+    }
 
+    @PutMapping("/{userId}/admin-edit")
+    public ResponseEntity<UserDTO> editUserByAdmin(
+            @PathVariable int userId,
+            @RequestBody @Valid EditUserDTO editUserDTO) {
+        UserDTO updatedUser = userService.editUserByAdmin(userId, editUserDTO);
+        return ResponseEntity.ok(updatedUser);
+    }
 } 

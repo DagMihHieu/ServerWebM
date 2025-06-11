@@ -5,6 +5,7 @@ import com.lowquality.serverwebm.models.entity.Chapter;
 import com.lowquality.serverwebm.models.entity.Pages;
 import com.lowquality.serverwebm.repository.ChapterRepository;
 import com.lowquality.serverwebm.repository.PagesRepository;
+import com.lowquality.serverwebm.util.UrlUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
@@ -23,10 +24,12 @@ public class PageService {
     }
 
     private PagesDTO convertToDTO(Pages pages){
+        String img_url = pages.getPage_img_url();
+        img_url= UrlUtils.toPublicUrl(img_url);
         return PagesDTO.builder()
                 .id(pages.getId())
                 .page_number(pages.getPage_number())
-                .page_img_url(pages.getPage_img_url())
+                .page_img_url(img_url)
                 .build();
     }
     public List<PagesDTO> getPagesOfChapter(Integer mangaId, Integer chapterNum) {
