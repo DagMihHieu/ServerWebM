@@ -28,7 +28,7 @@ public class FavoriteController {
     public ResponseEntity<FavoriteDTO> addFavorite(
             @PathVariable Integer mangaId
     ) {
-        FavoriteDTO dto = favoriteService.addFavorite(SecurityUtils.getCurrentUserId(), mangaId);
+        FavoriteDTO dto = favoriteService.addFavorite(mangaId);
         return ResponseEntity.ok(dto);
     }
 
@@ -37,7 +37,15 @@ public class FavoriteController {
     public ResponseEntity<Void> removeFavorite(
             @PathVariable Integer mangaId
     ) {
-        favoriteService.removeFavoriteByUserAndManga(SecurityUtils.getCurrentUserId(), mangaId);
+        favoriteService.removeFavoriteByUserAndManga( mangaId);
+        return ResponseEntity.noContent().build();
+    }
+    // Xóa manga khỏi yêu thích
+    @DeleteMapping("/{favoriteId}")
+    public ResponseEntity<Void> removeFavoriteById(
+            @PathVariable Integer favoriteId
+    ) {
+        favoriteService.removeFavorite( favoriteId);
         return ResponseEntity.noContent().build();
     }
 }
