@@ -24,8 +24,9 @@ public class FavoriteService {
     @Autowired
     private PermissionService permissionService;
 
-    public List<FavoriteDTO> findByUserId(Integer userId) {
-        return favoriteRepository.findByUser_Id(userId).stream().map(this::convertToDTO).collect(Collectors.toList());
+    public List<FavoriteDTO> findByUserId() {
+        User user = permissionService.getCurrentUser();
+        return favoriteRepository.findByUser_Id(user.getId()).stream().map(this::convertToDTO).collect(Collectors.toList());
 
     }
     public Favorite findById(Integer id) {
@@ -43,6 +44,11 @@ public class FavoriteService {
     favorite.setManga(manga);
     favoriteRepository.save(favorite);
     return convertToDTO(favorite);
+    }
+    public boolean isFavorite(Integer mangaId) {
+        User user= permissionService.getCurrentUser();
+        favoriteRepository.findByUser_IdAndManga_Id(user.getId(),mangaId);
+        return favoriteRepository.findByUser_IdAndManga_Id(user.getId(), mangaId) != null;
     }
     public void removeFavorite(Integer favoriteID) {
         Favorite favorite = findById(favoriteID);
