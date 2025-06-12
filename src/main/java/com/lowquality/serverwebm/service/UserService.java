@@ -1,12 +1,16 @@
 package com.lowquality.serverwebm.service;
 
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.lowquality.serverwebm.models.DTO.*;
 import com.lowquality.serverwebm.models.entity.Role;
+import com.lowquality.serverwebm.models.entity.VerificationToken;
+import com.lowquality.serverwebm.repository.VerificationTokenRepository;
 import com.lowquality.serverwebm.util.SecurityUtils;
 import com.lowquality.serverwebm.util.UrlUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +34,11 @@ public class UserService {
     private final RoleService roleService;
     @Autowired
     private UrlUtils urlUtils;
+    @Autowired
+    private VerificationTokenRepository tokenRepository;
 
+    @Autowired
+    private EmailService emailService;
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, PermissionService permissionService, FileStorageService fileStorageService, RoleService roleService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -58,7 +66,9 @@ public class UserService {
         if (user.isEmpty()) {
             throw new IllegalArgumentException("Email không tồn tại");
         }
-
+        if (!user.get().isActive()) {
+            throw new IllegalArgumentException("Tài khoản chưa được xác thực qua email");
+        }
         User foundUser = user.get();
         if (foundUser.getPassword() == null) {
             throw new IllegalArgumentException("Tài khoản không hợp lệ");
@@ -76,7 +86,7 @@ public class UserService {
     public UserDTO updateUserInfo(UserDTO userDTO) {
         User user = findById(userDTO.getId());
         permissionService.checkUserPermission(user.getId(),"bạn không có quyền cập nhật thông tin");
-        user.setEmail(userDTO.getEmail());
+//        user.setEmail(userDTO.getEmail());
         user.setFullName(userDTO.getFullName());
         userRepository.save(user);
         return(convertToDTO(user));
@@ -91,9 +101,25 @@ public class UserService {
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setFullName(request.getFullName());
-        user.setActive(true);
-        user.setRole(role);
+        user.setActive(false); // chưa kích hoạt
+        user.setRole(Role.USER);
         User savedUser = userRepository.save(user);
+
+        // Tạo token và gửi email
+        String token = UUID.randomUUID().toString();
+        VerificationToken verificationToken = new VerificationToken();
+        verificationToken.setToken(token);
+        verificationToken.setUser(savedUser);
+        verificationToken.setExpiryDate(LocalDateTime.now().plusHours(24));
+        tokenRepository.save(verificationToken);
+
+        String verifyLink = "http://localhost:8080/api/auth/verify?token=" + token;
+        emailService.sendEmail(
+                savedUser.getEmail(),
+                "Xác nhận tài khoản",
+                "Vui lòng nhấp vào liên kết để xác nhận tài khoản của bạn:\n" + verifyLink
+        );
+
         return convertToDTO(savedUser);
     }
     public User findById(Integer id){
@@ -142,6 +168,7 @@ public class UserService {
         String avatarUrl = urlUtils.toPublicUrl(user.getAvatarUrl());
         System.out.println("Convert user: " + user.getEmail());
         System.out.println("Role: " + (user.getRole() != null ? user.getRole().getName() : "null"));
+        System.out.println("Avatar URL: " + avatarUrl);
         RoleDTO   roleDTO = roleService.getRoleById(user.getRole().getRole_Id());
         return UserDTO.builder()
             .id(user.getId())
@@ -230,4 +257,5 @@ public class UserService {
         targetUser.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(targetUser);
     }
+
 }

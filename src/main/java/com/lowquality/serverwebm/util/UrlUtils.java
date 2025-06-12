@@ -16,7 +16,7 @@ public class UrlUtils {
 
     public static String toPublicUrl(String filePath) {
         return filePath != null && uploadDir != null
-                ? filePath.replace(uploadDir, "/upload")
+                ? filePath.replace(uploadDir, "/upload/")
                 : null;
     }
 }

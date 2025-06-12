@@ -2,7 +2,11 @@ package com.lowquality.serverwebm.controller;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
+import com.lowquality.serverwebm.models.DTO.*;
+import com.lowquality.serverwebm.models.entity.VerificationToken;
+import com.lowquality.serverwebm.service.VerificationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -13,10 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.lowquality.serverwebm.models.DTO.LoginRequest;
-import com.lowquality.serverwebm.models.DTO.LoginResponse;
-import com.lowquality.serverwebm.models.DTO.RegisterRequest;
-import com.lowquality.serverwebm.models.DTO.UserDTO;
 import com.lowquality.serverwebm.service.UserService;
 
 import jakarta.validation.Valid;
@@ -26,9 +26,11 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/auth")
 public class AuthenticationController {
     private final UserService userService;
+    private final VerificationService verificationService;
 
-    public AuthenticationController(UserService userService) {
+    public AuthenticationController(UserService userService, VerificationService verificationService) {
         this.userService = userService;
+        this.verificationService = verificationService;
     }
 
     @PostMapping("/register")
@@ -39,6 +41,14 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = userService.login(request.getEmail(), request.getPassword());
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/verify")
+    public ResponseEntity<ApiResponse<String>> verifyAccount(@RequestParam String token) {
+        ApiResponse<String> response = verificationService.verifyToken(token);
+        if (!response.isSuccess()) {
+            return ResponseEntity.badRequest().body(response);
+        }
         return ResponseEntity.ok(response);
     }
 
@@ -59,4 +69,6 @@ public class AuthenticationController {
         response.put("exists", exists);
         return ResponseEntity.ok(response);
     }
+//    @PostMapping("/change-password")
+//    public ResponseEntity<Boolean> change
 } 

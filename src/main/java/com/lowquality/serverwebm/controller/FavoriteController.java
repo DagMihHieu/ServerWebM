@@ -46,12 +46,12 @@ public class FavoriteController {
         favoriteService.removeFavoriteByUserAndManga( mangaId);
         return ResponseEntity.noContent().build();
     }
-    // Xóa manga khỏi yêu thích
-    @DeleteMapping("/{favoriteId}")
-    public ResponseEntity<Void> removeFavoriteById(
-            @PathVariable Integer favoriteId
-    ) {
-        favoriteService.removeFavorite( favoriteId);
-        return ResponseEntity.noContent().build();
-    }
+//    // Xóa manga khỏi yêu thích
+//    @DeleteMapping("/{favoriteId}")
+//    public ResponseEntity<Void> removeFavoriteById(
+//            @PathVariable Integer favoriteId
+//    ) {
+//        favoriteService.removeFavorite( favoriteId);
+//        return ResponseEntity.noContent().build();
+//    }
 }
