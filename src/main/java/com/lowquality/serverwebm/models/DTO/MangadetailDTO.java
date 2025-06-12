@@ -17,7 +17,7 @@ public class MangadetailDTO {
     private Integer id;
     private String name;
     private AuthorDTO id_author;
-    private UserDTO Uploader;
+    private String uploader;
     private String cover_img;
     private String description;
     private List<CategoryDTO> id_category;

@@ -21,20 +21,23 @@ public class FavoriteService {
     private MangaService mangaService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private PermissionService permissionService;
 
-    public List<FavoriteDTO> findByUserId(Integer userId) {
-        return favoriteRepository.findByUser_Id(userId).stream().map(this::convertToDTO).collect(Collectors.toList());
+    public List<FavoriteDTO> findByUserId() {
+        User user = permissionService.getCurrentUser();
+        return favoriteRepository.findByUser_Id(user.getId()).stream().map(this::convertToDTO).collect(Collectors.toList());
 
     }
     public Favorite findById(Integer id) {
         return favoriteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Favorite not found"));
     }
-    public FavoriteDTO addFavorite(Integer userId,Integer mangaId) {
-        if (favoriteRepository.findByUser_IdAndManga_Id(userId,mangaId)!=null) {
+    public FavoriteDTO addFavorite(Integer mangaId) {
+        User user= permissionService.getCurrentUser();
+        if (favoriteRepository.findByUser_IdAndManga_Id(user.getId(),mangaId)!=null) {
             throw new IllegalArgumentException("Manga đã nằm trong danh sách yêu thích");
         }
-        User user = userService.findById(userId);
     Mangadetail manga= mangaService.getMangaEntityById(mangaId);
     Favorite favorite = new Favorite();
     favorite.setUser(user);
@@ -42,8 +45,15 @@ public class FavoriteService {
     favoriteRepository.save(favorite);
     return convertToDTO(favorite);
     }
+    public boolean isFavorite(Integer mangaId) {
+        User user= permissionService.getCurrentUser();
+        favoriteRepository.findByUser_IdAndManga_Id(user.getId(),mangaId);
+        return favoriteRepository.findByUser_IdAndManga_Id(user.getId(), mangaId) != null;
+    }
     public void removeFavorite(Integer favoriteID) {
         Favorite favorite = findById(favoriteID);
+        User user = userService.findById(favorite.getUser().getId());
+        permissionService.checkUserPermission(user.getId(),"thay đổi favorite");
         favoriteRepository.delete(favorite);
     }
 
@@ -55,8 +65,11 @@ public class FavoriteService {
                 .build();
     }
 
-    public void removeFavoriteByUserAndManga(Integer userId, Integer mangaId) {
-        Favorite favorite = favoriteRepository.findByUser_IdAndManga_Id(userId,mangaId);
+    public void removeFavoriteByUserAndManga( Integer mangaId) {
+        User user= permissionService.getCurrentUser();
+        Favorite favorite = favoriteRepository.findByUser_IdAndManga_Id(user.getId(), mangaId);
+
+        permissionService.checkUserPermission(user.getId(),"thay đổi favorite");
         favoriteRepository.delete(favorite);
     }
 }

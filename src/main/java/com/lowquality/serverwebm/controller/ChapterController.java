@@ -42,10 +42,6 @@ public class ChapterController {
             @RequestParam Integer chapterNumber,
             @RequestParam("pages") List<MultipartFile> pages) {
 
-        if (chapterService.isChapterNumberExists(mangaId, chapterNumber)) {
-            throw new IllegalArgumentException("Chapter number already exists for this manga");
-        }
-
         ChapterDTO chapterDTO = chapterService.addChapterWithPages(
                 chapterName,
                 chapterNumber,

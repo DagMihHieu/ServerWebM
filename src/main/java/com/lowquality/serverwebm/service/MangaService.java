@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,15 +46,13 @@ public class MangaService {
                 .orElseThrow(() -> new ResourceNotFoundException("Manga not found: " + id));
     }
     public void deleteManga(Integer id) {
-        User user = SecurityUtils.getCurrentUser();
         Mangadetail manga = this.getMangaEntityById(id);
-        permissionService.checkUserPermission(user,manga.getUploader().getId(),"xóa truyện này");
+        permissionService.checkUserPermission(manga.getUploader().getId(),"xóa truyện này");
         mangadetailRepository.delete(manga);
     }
     public void addCategories(Integer mangaId, List<Integer> categoryIds) {
-        User user = SecurityUtils.getCurrentUser();
         Mangadetail manga = this.getMangaEntityById(mangaId);
-        permissionService.checkUserPermission(user,manga.getUploader().getId(),"cập nhật danh mục");
+        permissionService.checkUserPermission(manga.getUploader().getId(),"cập nhật danh mục");
         List<Category> categories = new ArrayList<>();
         for (Integer categoryId : categoryIds) {
             Category category = categoryService.findById(categoryId);
@@ -68,19 +67,15 @@ public class MangaService {
     }
 
     public void removeCategoryFromManga(Integer mangaId, Integer categoryId) {
-        User user = SecurityUtils.getCurrentUser();
-
         Mangadetail manga = this.getMangaEntityById(mangaId);
-        permissionService.checkUserPermission(user,manga.getUploader().getId(),"Xóa danh mục");
+        permissionService.checkUserPermission(manga.getUploader().getId(),"Xóa danh mục");
         manga.getCategories().removeIf(category -> category.getId().equals(categoryId));
         mangadetailRepository.save(manga);
     }
 // cập nhật tác giả
     public void addAuthorToManga(Integer mangaId, String authorName) {
-        User user = SecurityUtils.getCurrentUser();
-
         Mangadetail manga = this.getMangaEntityById(mangaId);
-        permissionService.checkUserPermission(user,manga.getUploader().getId(),"cập nhật tác giả");
+        permissionService.checkUserPermission(manga.getUploader().getId(),"cập nhật tác giả");
         Author author = new Author();
         author.setAuthor_name(authorName);
         manga.setAuthor_id(author);
@@ -106,7 +101,6 @@ public class MangaService {
                 .collect(Collectors.toList());
 
         StatusDTO statusDTO = statusService.convertToDTO(mangadetail.getStatus_id());
-        UserDTO userDTO = userService.getUserById(mangadetail.getUploader().getId());
         return MangadetailDTO.builder()
                 .id(mangadetail.getId())
                 .name(mangadetail.getName())
@@ -114,6 +108,7 @@ public class MangaService {
                 .cover_img(mangadetail.getCover_img())
                 .id_author(authorDTO)
                 .id_category(categoryDTOs)
+                .uploader(mangadetail.getUploader().getFullName())
                 .id_status(statusDTO)
                 .build();
     }
@@ -131,8 +126,17 @@ public class MangaService {
 
         if (categoryIds != null && !categoryIds.isEmpty()) {
             mangaList = mangaList.stream()
-                    .filter(m -> m.getCategories().stream()
-                            .anyMatch(c -> categoryIds.contains(c.getId())))
+//                    .filter(m -> m.getCategories().stream()
+//                            .allMatch(c -> categoryIds.contains(c.getId())))
+//                    .collect(Collectors.toList());
+                    .filter(manga -> {
+                // Lấy ra danh sách ID category của manga hiện tại
+                Set<Integer> mangaCategoryIds = manga.getCategories().stream()
+                        .map(Category::getId)
+                        .collect(Collectors.toSet());
+                // Kiểm tra xem nó có chứa TẤT CẢ các ID được yêu cầu không
+                return mangaCategoryIds.containsAll(categoryIds);
+            })
                     .collect(Collectors.toList());
         }
 
@@ -153,14 +157,14 @@ public class MangaService {
     }
 
 public MangadetailDTO addManga(CreateMangaRequest request) {
+        permissionService.checkAddMangaPermission();
         User user = SecurityUtils.getCurrentUser();
-        permissionService.checkAddMangaPermission(user);
         // Tạo manga mới
         Mangadetail manga = new Mangadetail();
         manga.setName(request.getName());
         manga.setDescription(request.getDescription());
         manga.setCover_img(request.getCoverImg());
-
+        manga.setUploader(user);
         // Set author nếu có
         if (request.getAuthorId() != null) {
             Author author = authorService.findById(request.getAuthorId());
