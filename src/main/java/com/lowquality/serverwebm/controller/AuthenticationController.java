@@ -69,6 +69,23 @@ public class AuthenticationController {
         response.put("exists", exists);
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/send-code")
+    public ResponseEntity<?> sendCode(
+//            @RequestParam(required = false) String email
+    ) {
+        verificationService.sendResetCode();
+        return ResponseEntity.ok(ApiResponse.success(null, "Mã xác thực đã được gửi đến email của bạn"));
+    }
+
+    @PostMapping("/verify-code")
+    public ResponseEntity<?> verifyCode(@RequestParam String email, @RequestParam String code) {
+        boolean valid = verificationService.verifyResetCode(email, code);
+        if (valid) {
+            return ResponseEntity.ok("Mã hợp lệ");
+        }
+        return ResponseEntity.badRequest().body("Mã không hợp lệ hoặc đã hết hạn");
+    }
 //    @PostMapping("/change-password")
 //    public ResponseEntity<Boolean> change
 } 

@@ -145,6 +145,20 @@ public class UserService {
         userRepository.save(user);
         return convertToDTO(user);
     }
+    public UserDTO unBanUser(int id) {
+        User user = findById(id);
+        // Kiểm tra không cho phép ban admin khác (nếu cần)
+        User currentUser = SecurityUtils.getCurrentUser();
+        if (user.getRole().getName().equals("ADMIN") || !permissionService.isAdminOrMod(currentUser)) {
+            permissionService.noPermission("Bạn không thể unban admin");
+        }
+        if (user.getRole().getName().equals("MOD") || !permissionService.isAdmin(currentUser)) {
+            permissionService.noPermission("Bạn không có quyền unban mod khác. ");
+        }
+        user.setActive(true);
+        userRepository.save(user);
+        return convertToDTO(user);
+    }
     public UserDTO updateAvatar(Integer userId, MultipartFile avatar) {
         User user = findById(userId);
         permissionService.checkUserPermission(user.getId(), "bạn không có quyền cập nhật avatar");
