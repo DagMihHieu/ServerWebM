@@ -5,6 +5,7 @@ import com.lowquality.serverwebm.models.entity.*;
 import com.lowquality.serverwebm.repository.ChapterRepository;
 import com.lowquality.serverwebm.repository.MangadetailRepository;
 import com.lowquality.serverwebm.util.SecurityUtils;
+import com.lowquality.serverwebm.util.UrlUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,6 +35,8 @@ public class MangaService {
     private UserService userService;
     @Autowired
     private FileStorageService fileStorageService;
+    @Autowired
+    private UrlUtils urlUtils;
 
     //    @Autowired
 //    MangaService(MangadetailRepository mangadetailRepository, ChapterRepository chapterRepository, AuthorService authorService, CategoryService categoryService, StatusService statusService) {
@@ -107,12 +110,12 @@ public class MangaService {
         List<CategoryDTO> categoryDTOs = mangadetail.getCategories().stream()
                 .map(categoryService::convertToDTO)
                 .collect(Collectors.toList());
-
+        String coverimgURL = "http://localhost:8080"+urlUtils.toPublicUrl(mangadetail.getCover_img());
         return MangadetailDTO.builder()
                 .id(mangadetail.getId())
                 .name(mangadetail.getName())
                 .description(mangadetail.getDescription())
-                .cover_img(mangadetail.getCover_img())
+                .cover_img(coverimgURL)
                 .id_author(authorDTO)
                 .id_category(categoryDTOs)
                 .uploader(mangadetail.getUploader().getFullName())
