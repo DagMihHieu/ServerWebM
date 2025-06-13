@@ -279,7 +279,7 @@ public class UserService {
         // Nếu mật khẩu cũ được cung cấp: xác thực bằng mật khẩu || admin && mod bỏ qua
             if (changePasswordRequest.getOldPassword() != null && !changePasswordRequest.getOldPassword().isBlank()) {
                 permissionService.checkUserPermission(targetUser.getId(), "đổi mật khẩu");
-                if (!passwordEncoder.matches(changePasswordRequest.getOldPassword() , targetUser.getPassword())) {
+                if (Objects.equals(passwordEncoder.encode(changePasswordRequest.getOldPassword()), targetUser.getPassword())) {
                     throw new IllegalArgumentException("Mật khẩu không chính xác");
                 }
             }
@@ -289,7 +289,7 @@ public class UserService {
         if (changePasswordRequest.getNewPassword() == null || changePasswordRequest.getNewPassword().isBlank()) {
           newPassword = generateRandomPassword(10);
             // Tuỳ chọn: gửi mật khẩu mới qua email
-            emailService.sendEmail(targetUser.getEmail(), "Mật khẩu mới", "Mật khẩu mới của bạn là: " + newPassword);
+            emailService.sendEmail(targetUser.getEmail(), "Mật khẩu mới", "Mật khẩu mới của bạn là:" + newPassword);
         }
         if(changePasswordRequest.getNewPassword() != null && !changePasswordRequest.getNewPassword().isEmpty()) {
             User currUser = SecurityUtils.getCurrentUser();

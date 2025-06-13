@@ -95,7 +95,6 @@ public class ChapterService {
         chapterRepository.delete(chapter);
     }
     public ChapterDTO addChapterWithPages(
-
             String chapterName,
             Integer chapterNumber,
             Integer mangaId,
@@ -103,10 +102,10 @@ public class ChapterService {
         if (isChapterNumberExists(mangaId, chapterNumber)) {
             throw new IllegalArgumentException("Chapter number already exists for this manga");
         }
-        User user = SecurityUtils.getCurrentUser();
+//        User user = SecurityUtils.getCurrentUser();
         // Tạo chapter mới
         Mangadetail manga= mangaService.getMangaEntityById(mangaId);
-        permissionService.checkUserPermission(manga.getUploader().getId(),"thêm chap trong truyện này.");
+//        permissionService.checkUserPermission(manga.getUploader().getId(),"thêm chap trong truyện này.");
         Chapter chapter = new Chapter();
         chapter.setName(chapterName);
         chapter.setChapNumber(chapterNumber);

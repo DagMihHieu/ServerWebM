@@ -1,6 +1,9 @@
 package com.lowquality.serverwebm.service;
 
+import com.lowquality.serverwebm.repository.UserRepository;
 import com.lowquality.serverwebm.util.SecurityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import com.lowquality.serverwebm.models.entity.User;
 import org.springframework.security.access.AccessDeniedException;
@@ -9,6 +12,8 @@ import java.util.Objects;
 
 @Service
 public class PermissionService {
+    @Autowired
+    private UserRepository userRepository;
     public void checkCommentPermission( int ownerId, String action) {
         User currentUser = getCurrentUser();
         boolean isOwner = currentUser.getId().equals(ownerId);
@@ -17,7 +22,9 @@ public class PermissionService {
         }
     }
     public User getCurrentUser() {
-        return SecurityUtils.getCurrentUser();
+
+        return userRepository.findByEmail(SecurityUtils.getCurrentUserEmail())
+                .orElseThrow(()-> new ResourceNotFoundException("User not found"));
     }
     public boolean isAdminOrMod(User user) {
         return "ADMIN".equals(getRoleName(user)) || "MOD".equals(getRoleName(user));
@@ -30,7 +37,7 @@ public class PermissionService {
         }
     }
     public void onlyModAndAdmin(String action) {
-        User currentUser = SecurityUtils.getCurrentUser();
+        User currentUser = getCurrentUser();
         if (!isAdminOrMod(currentUser)) {
             throw new AccessDeniedException("Bạn không có quyền " + action );
         }
