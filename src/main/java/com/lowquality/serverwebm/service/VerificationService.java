@@ -71,7 +71,9 @@ public class VerificationService {
                 "Mã xác thực của bạn là: " + code
         );
     }
+    @Transactional
     public boolean verifyResetCode(String email, String code) {
+        email =SecurityUtils.getCurrentUserEmail();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Email không tồn tại"));
 
@@ -82,8 +84,9 @@ public class VerificationService {
         VerificationCode resetCode = optionalCode.get();
 
         if (resetCode.getExpiryDate().isBefore(LocalDateTime.now())) return false;
-
-        return resetCode.getCode().equals(code);
+        boolean result = resetCode.getCode().equals(code);
+        consumeResetCode(user);
+        return result ;
     }
 
     public void consumeResetCode(User user) {

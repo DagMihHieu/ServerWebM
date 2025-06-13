@@ -79,10 +79,10 @@ public class AuthenticationController {
     }
 
     @PostMapping("/verify-code")
-    public ResponseEntity<?> verifyCode(@RequestParam String email, @RequestParam String code) {
+    public ResponseEntity<?> verifyCode(@RequestParam(required = false) String email, @RequestParam String code) {
         boolean valid = verificationService.verifyResetCode(email, code);
         if (valid) {
-            return ResponseEntity.ok("Mã hợp lệ");
+            return ResponseEntity.ok("Xác thực mã thành công");
         }
         return ResponseEntity.badRequest().body("Mã không hợp lệ hoặc đã hết hạn");
     }
