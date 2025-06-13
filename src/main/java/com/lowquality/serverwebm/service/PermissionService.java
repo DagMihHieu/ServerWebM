@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import com.lowquality.serverwebm.models.entity.User;
 import org.springframework.security.access.AccessDeniedException;
 
+import java.util.Objects;
+
 @Service
 public class PermissionService {
     public void checkCommentPermission( int ownerId, String action) {
@@ -59,7 +61,9 @@ public class PermissionService {
 
     public void checkChangeRolePermission(User targetUser, String targetRoleName) {
         User currentUser = getCurrentUser();
-
+        if(Objects.equals(targetUser.getId(), currentUser.getId())){
+           noPermission("Không thể chỉnh role bản thân");
+        }
         if (isAdmin(currentUser)) {
             return; // Admin có thể làm mọi thứ
         }

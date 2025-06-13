@@ -1,8 +1,10 @@
 package com.lowquality.serverwebm.service;
 
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -36,7 +38,8 @@ public class UserService {
     private UrlUtils urlUtils;
     @Autowired
     private VerificationTokenRepository tokenRepository;
-
+    @Autowired
+    VerificationService verificationService;
     @Autowired
     private EmailService emailService;
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, PermissionService permissionService, FileStorageService fileStorageService, RoleService roleService) {
@@ -133,8 +136,12 @@ public class UserService {
     }
     public UserDTO banUser(int id) {
         User user = findById(id);
+
         // Kiểm tra không cho phép ban admin khác (nếu cần)
         User currentUser = SecurityUtils.getCurrentUser();
+        if(Objects.equals(user.getId(), currentUser.getId())){
+            permissionService.noPermission("Không thể ban bản thân");
+        }
         if (user.getRole().getName().equals("ADMIN") || !permissionService.isAdminOrMod(currentUser)) {
             permissionService.noPermission("Bạn không thể ban admin");
         }
@@ -265,11 +272,43 @@ public class UserService {
 
         return convertToDTO(targetUser);
     }
-    public void changePassword(int userId, String oldPassword, String newPassword) {
-        User targetUser = findById(userId);
-        permissionService.checkUserPermission(targetUser.getId(),"Bạn không có quyền thay đổi mật khẩu người này");
+    public void changePassword(ChangePasswordRequest changePasswordRequest) {
+        User targetUser = userRepository.findByEmail(changePasswordRequest.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found") ) ;
+
+        // Nếu mật khẩu cũ được cung cấp: xác thực bằng mật khẩu || admin && mod bỏ qua
+            if (changePasswordRequest.getOldPassword() != null && !changePasswordRequest.getOldPassword().isBlank()) {
+                permissionService.checkUserPermission(targetUser.getId(), "đổi mật khẩu");
+                if (!passwordEncoder.matches(changePasswordRequest.getOldPassword() , targetUser.getPassword())) {
+                    throw new IllegalArgumentException("Mật khẩu không chính xác");
+                }
+            }
+
+        String  newPassword="";
+        // Nếu mật khẩu mới không có: tạo mật khẩu ngẫu nhiên
+        if (changePasswordRequest.getNewPassword() == null || changePasswordRequest.getNewPassword().isBlank()) {
+          newPassword = generateRandomPassword(10);
+            // Tuỳ chọn: gửi mật khẩu mới qua email
+            emailService.sendEmail(targetUser.getEmail(), "Mật khẩu mới", "Mật khẩu mới của bạn là: " + newPassword);
+        }
+        if(changePasswordRequest.getNewPassword() != null && !changePasswordRequest.getNewPassword().isEmpty()) {
+            User currUser = SecurityUtils.getCurrentUser();
+            if(!permissionService.isAdminOrMod(currUser)) {
+                permissionService.noPermission("Đéo có quyền");
+            }
+        }
         targetUser.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(targetUser);
     }
+    private String generateRandomPassword(int length) {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
+    }
+
 
 }

@@ -24,13 +24,13 @@ public class AuthorService {
     private AuthorDTO convertToDTO(Author author){
         return AuthorDTO.builder()
                 .id(author.getId())
-                .author_name(author.getAuthor_name())
+                .author_name(author.getAuthorName())
                 .build();
     }
 
     public AuthorDTO createAuthor(String authorName) {
         Author author = new Author();
-        author.setAuthor_name(authorName);
+        author.setAuthorName(authorName);
         author = authorRepository.save(author);
         return convertToDTO(author);
     }
@@ -41,5 +41,9 @@ public class AuthorService {
     }
     public AuthorDTO getAuthorById(Integer id) {
         return convertToDTO(findById(id));
+    }
+
+    public Author findByAuthor_name(String name) {
+        return authorRepository.findByAuthorName(name);
     }
 }

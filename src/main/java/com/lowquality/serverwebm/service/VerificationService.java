@@ -50,8 +50,11 @@ public class VerificationService {
         return ApiResponse.success(null, "Tài khoản đã được xác thực thành công");
     }
     @Transactional
-    public void sendResetCode() {
-        String email =SecurityUtils.getCurrentUserEmail();
+    public void sendResetCode(String email) {
+        if(email == null) {
+            email = SecurityUtils.getCurrentUserEmail();
+        }
+
         User user =userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         // XÓA mã xác thực cũ nếu đã tồn tại

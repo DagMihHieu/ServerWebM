@@ -72,9 +72,9 @@ public class AuthenticationController {
 
     @PostMapping("/send-code")
     public ResponseEntity<?> sendCode(
-//            @RequestParam(required = false) String email
+            @RequestParam(required = false) String email
     ) {
-        verificationService.sendResetCode();
+        verificationService.sendResetCode(email);
         return ResponseEntity.ok(ApiResponse.success(null, "Mã xác thực đã được gửi đến email của bạn"));
     }
 
@@ -86,6 +86,11 @@ public class AuthenticationController {
         }
         return ResponseEntity.badRequest().body("Mã không hợp lệ hoặc đã hết hạn");
     }
-//    @PostMapping("/change-password")
-//    public ResponseEntity<Boolean> change
+    @PostMapping("/change-password")
+    public ResponseEntity<ApiResponse<String>> changePassword(
+    @RequestBody @Valid ChangePasswordRequest request
+    ){
+        userService.changePassword(request);
+    return ResponseEntity.ok(ApiResponse.success(null, "Đổi mật khẩu thành công"));
+    }
 } 
