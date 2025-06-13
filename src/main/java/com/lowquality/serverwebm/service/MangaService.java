@@ -110,7 +110,7 @@ public class MangaService {
         List<CategoryDTO> categoryDTOs = mangadetail.getCategories().stream()
                 .map(categoryService::convertToDTO)
                 .collect(Collectors.toList());
-        String coverimgURL = "http://localhost:8080"+urlUtils.toPublicUrl(mangadetail.getCover_img());
+        String coverimgURL = urlUtils.toPublicUrl(mangadetail.getCover_img());
         return MangadetailDTO.builder()
                 .id(mangadetail.getId())
                 .name(mangadetail.getName())

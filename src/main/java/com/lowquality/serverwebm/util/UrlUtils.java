@@ -3,7 +3,6 @@ package com.lowquality.serverwebm.util;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
 @Component
 public class UrlUtils {
 
@@ -15,8 +14,16 @@ public class UrlUtils {
     }
 
     public static String toPublicUrl(String filePath) {
-        return filePath != null && uploadDir != null
-                ? filePath.replace(uploadDir, "/upload/")
-                : null;
+        if (filePath == null || uploadDir == null) {
+            return null;
+        }
+
+        // Chỉ thay thế nếu đường dẫn bắt đầu bằng uploadDir
+        if (filePath.startsWith(uploadDir)) {
+            return filePath.replace(uploadDir, "http://localhost:8080/upload/");
+        }
+
+        // Nếu không khớp, trả về nguyên bản
+        return filePath;
     }
 }
