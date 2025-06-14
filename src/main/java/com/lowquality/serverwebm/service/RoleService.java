@@ -16,8 +16,9 @@ public class RoleService {
     private RoleRepository roleRepository;
 
     public List<RoleDTO> getAllRole() {
-
-        return roleRepository.findAll().stream().map(this::convertToDTO).collect(Collectors.toList());
+        List<Role> roles = roleRepository.findAll();
+        roles = roles.stream().filter(role -> role.getRole_Id() !=1 ).toList();
+        return roles.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
     Role findByRoleId(Integer roleId) {
         return roleRepository.findById(roleId)

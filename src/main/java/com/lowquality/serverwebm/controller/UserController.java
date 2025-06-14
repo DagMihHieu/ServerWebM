@@ -47,6 +47,11 @@ public class UserController {
         UserDTO bannedUser = userService.banUser(id);
         return ResponseEntity.ok(bannedUser);
     }
+    @PutMapping("/unban/{id}")
+    public ResponseEntity<UserDTO> unBanUser(@PathVariable int id) {
+        UserDTO bannedUser = userService.banUser(id);
+        return ResponseEntity.ok(bannedUser);
+    }
     @PostMapping("/add")
     public ResponseEntity<UserDTO> addUser(@RequestBody @Valid AddUserDTO addUserDTO) {
         UserDTO newUser = userService.addUser(addUserDTO);

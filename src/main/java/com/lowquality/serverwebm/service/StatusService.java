@@ -34,4 +34,7 @@ public class StatusService {
         return statusRepository.findById(statusId)
                 .orElseThrow(() -> new ResourceNotFoundException("Status not found: " + statusId));
     }
+    public StatusDTO getById(Integer statusId) {
+        return convertToDTO(findById(statusId));
+    }
 }

@@ -1,13 +1,12 @@
 package com.lowquality.serverwebm.controller;
 
-import com.lowquality.serverwebm.models.DTO.ChapterDTO;
 import com.lowquality.serverwebm.models.DTO.CreateMangaRequest;
 import com.lowquality.serverwebm.models.DTO.MangadetailDTO;
-import com.lowquality.serverwebm.models.DTO.PagesDTO;
 import com.lowquality.serverwebm.service.ChapterService;
 import com.lowquality.serverwebm.service.MangaService;
 import com.lowquality.serverwebm.service.PageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -67,9 +66,9 @@ public class MangaController {
         return ResponseEntity.ok(mangaService.getMangaById(id));
     }
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MangadetailDTO> createManga(
-            @RequestBody CreateMangaRequest request) {
+            @ModelAttribute CreateMangaRequest request) {
         return ResponseEntity.ok(mangaService.addManga(request));
     }
     @DeleteMapping("{mangaId}")

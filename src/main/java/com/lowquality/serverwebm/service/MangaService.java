@@ -5,6 +5,7 @@ import com.lowquality.serverwebm.models.entity.*;
 import com.lowquality.serverwebm.repository.ChapterRepository;
 import com.lowquality.serverwebm.repository.MangadetailRepository;
 import com.lowquality.serverwebm.util.SecurityUtils;
+import com.lowquality.serverwebm.util.UrlUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,6 +33,10 @@ public class MangaService {
     private PermissionService permissionService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private FileStorageService fileStorageService;
+    @Autowired
+    private UrlUtils urlUtils;
 
     //    @Autowired
 //    MangaService(MangadetailRepository mangadetailRepository, ChapterRepository chapterRepository, AuthorService authorService, CategoryService categoryService, StatusService statusService) {
@@ -77,7 +82,7 @@ public class MangaService {
         Mangadetail manga = this.getMangaEntityById(mangaId);
         permissionService.checkUserPermission(manga.getUploader().getId(),"cập nhật tác giả");
         Author author = new Author();
-        author.setAuthor_name(authorName);
+        author.setAuthorName(authorName);
         manga.setAuthor_id(author);
         mangadetailRepository.save(manga);
     }
@@ -94,18 +99,23 @@ public class MangaService {
     }
 
     private MangadetailDTO convertMangadetailToDTO(Mangadetail mangadetail) {
-        AuthorDTO authorDTO = authorService.getAuthorById(mangadetail.getAuthor_id().getId());
-
+        StatusDTO statusDTO = null;
+        if (mangadetail.getStatus_id() != null) {
+            statusDTO = statusService.getById(mangadetail.getStatus_id().getId());
+        }
+        AuthorDTO authorDTO = null;
+        if (mangadetail.getAuthor_id() != null) {
+            authorDTO = authorService.getAuthorById(mangadetail.getAuthor_id().getId());
+        }
         List<CategoryDTO> categoryDTOs = mangadetail.getCategories().stream()
                 .map(categoryService::convertToDTO)
                 .collect(Collectors.toList());
-
-        StatusDTO statusDTO = statusService.convertToDTO(mangadetail.getStatus_id());
+        String coverimgURL = urlUtils.toPublicUrl(mangadetail.getCover_img());
         return MangadetailDTO.builder()
                 .id(mangadetail.getId())
                 .name(mangadetail.getName())
                 .description(mangadetail.getDescription())
-                .cover_img(mangadetail.getCover_img())
+                .cover_img(coverimgURL)
                 .id_author(authorDTO)
                 .id_category(categoryDTOs)
                 .uploader(mangadetail.getUploader().getFullName())
@@ -157,26 +167,40 @@ public class MangaService {
     }
 
 public MangadetailDTO addManga(CreateMangaRequest request) {
-        permissionService.checkAddMangaPermission();
+
         User user = SecurityUtils.getCurrentUser();
         // Tạo manga mới
+        permissionService.checkAddMangaPermission();
+        String MangaSubDir = "Manga_" + request.getName();
+        String coverImgUrl =  fileStorageService.storeFile( request.getCoverImg(),MangaSubDir);
         Mangadetail manga = new Mangadetail();
         manga.setName(request.getName());
         manga.setDescription(request.getDescription());
-        manga.setCover_img(request.getCoverImg());
+        manga.setCover_img(coverImgUrl);
         manga.setUploader(user);
         // Set author nếu có
-        if (request.getAuthorId() != null) {
-            Author author = authorService.findById(request.getAuthorId());
-            manga.setAuthor_id(author);
+        if (request.getAuthorName() != null) {
+            Author author = authorService.findByAuthor_name(request.getAuthorName());
+            if (author != null) {
+                manga.setAuthor_id(author);
+            }
+            else{
+                AuthorDTO authorDTO=  authorService.createAuthor(request.getAuthorName());
+                author = authorService.findById(authorDTO.getId());
+                manga.setAuthor_id(author);
+            }
+
         }
 
-        // Set status nếu có
+
         if (request.getStatusId() != null) {
             Status status = statusService.findById(request.getStatusId());
-            manga.setStatus_id(status);
+           if (status != null) {
+               manga.setStatus_id(status);
+           }
         }
-
+        Status defaultStatus = statusService.findById(1);
+        manga.setStatus_id(defaultStatus);
         // Lưu manga
         manga = mangadetailRepository.save(manga);
 
