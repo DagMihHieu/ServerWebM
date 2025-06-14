@@ -50,10 +50,12 @@ public class ChapterService {
             mangadetailDTO = mangaService.getMangaById(chapter.getManga().getId());
         }
 
+        assert mangadetailDTO != null;
         return ChapterDTO.builder()
                 .id(chapter.getId())
                 .chapter_name(chapter.getName())
-                .manga_id(mangadetailDTO)
+                .chapter_number(chapter.getChapNumber())
+                .manga_id(mangadetailDTO.getId())
                 .build();
     }
 
