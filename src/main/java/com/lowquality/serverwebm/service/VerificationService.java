@@ -51,7 +51,7 @@ public class VerificationService {
     }
     @Transactional
     public void sendResetCode(String email) {
-        if(email == null) {
+        if(email == null || email.isEmpty()) {
             email = SecurityUtils.getCurrentUserEmail();
         }
 
@@ -76,7 +76,9 @@ public class VerificationService {
     }
     @Transactional
     public boolean verifyResetCode(String email, String code) {
-        email =SecurityUtils.getCurrentUserEmail();
+        if(email == null || email.isEmpty()) {
+            email = SecurityUtils.getCurrentUserEmail();
+        }
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Email không tồn tại"));
 
