@@ -7,6 +7,7 @@ import com.lowquality.serverwebm.models.entity.Mangadetail;
 import com.lowquality.serverwebm.models.entity.Pages;
 import com.lowquality.serverwebm.models.entity.User;
 import com.lowquality.serverwebm.repository.ChapterRepository;
+import com.lowquality.serverwebm.repository.CommentRepository;
 import com.lowquality.serverwebm.repository.PagesRepository;
 import com.lowquality.serverwebm.util.SecurityUtils;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -24,14 +25,16 @@ public class ChapterService {
     private final PageService pageService;
     private final PermissionService permissionService;
     private final FileStorageService fileStorageService;
+    private final CommentRepository commentRepository;
 
-    public ChapterService(PagesRepository pagesRepository, ChapterRepository chapterRepository, MangaService mangaService, PageService pageService, PermissionService permissionService, FileStorageService fileStorageService) {
+    public ChapterService(PagesRepository pagesRepository, ChapterRepository chapterRepository, MangaService mangaService, PageService pageService, PermissionService permissionService, FileStorageService fileStorageService, CommentRepository commentRepository) {
         this.pagesRepository = pagesRepository;
         this.chapterRepository = chapterRepository;
         this.mangaService = mangaService;
         this.pageService = pageService;
         this.permissionService = permissionService;
         this.fileStorageService = fileStorageService;
+        this.commentRepository = commentRepository;
     }
 
 
@@ -86,9 +89,10 @@ public class ChapterService {
     }
 
     public void deleteChapter(Integer id){
-        User user = SecurityUtils.getCurrentUser();
+//        User user = SecurityUtils.getCurrentUser();
         Chapter chapter = findById(id);
         permissionService.checkUserPermission(chapter.getManga().getUploader().getId(),"xóa chap trong truyện này.");
+//        commentRepository.deleteByChapter_Id(id);
         chapterRepository.delete(chapter);
     }
     public ChapterDTO addChapterWithPages(
