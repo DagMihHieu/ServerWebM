@@ -10,6 +10,7 @@ import com.lowquality.serverwebm.models.entity.User;
 import com.lowquality.serverwebm.repository.CommentRepository;
 import com.lowquality.serverwebm.repository.UserRepository;
 import com.lowquality.serverwebm.util.SecurityUtils;
+import com.lowquality.serverwebm.util.UrlUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.access.AccessDeniedException;
@@ -31,12 +32,12 @@ public class CommentService {
     private MangaService mangaService;
 
     public List<CommentDTO> getAllCommentInChapter(int chapterId) {
-        return commentRepository.findByChapter_Id(chapterId).stream()
+        return commentRepository.findByChapter_IdOrderByUpdatedAtDesc(chapterId).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
     public List<CommentDTO> getAllCommentInManga(int mangaId) {
-        return commentRepository.findByManga_Id(mangaId).stream()
+        return commentRepository.findByManga_IdOrderByUpdatedAtDesc(mangaId).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
@@ -82,13 +83,17 @@ public class CommentService {
         return convertToDTO(commentRepository.save(comment));
     }
     private CommentDTO convertToDTO(Comment comment) {
-        if (comment.getIsDeleted()){
+        String avatarImgUrl = UrlUtils.toPublicUrl(comment.getUser().getAvatarUrl());
+        if (comment.getIsDeleted()) {
             return CommentDTO.builder()
                     .id(comment.getId())
                     .chapId(comment.getChapter() != null ? comment.getChapter().getId() : null)
                     .mangaId(comment.getManga().getId())
                     .comment("Comment này đã bị xóa")
-                    .isDeleted(comment.getIsDeleted())
+                    .isDeleted(true)
+                    .userName(comment.getUser().getFullName())
+                    .avatarUrl(avatarImgUrl)
+                    .updatedAt(comment.getUpdatedAt())
                     .build();
         }
 
@@ -97,8 +102,39 @@ public class CommentService {
                 .chapId(comment.getChapter() != null ? comment.getChapter().getId() : null)
                 .mangaId(comment.getManga().getId())
                 .comment(comment.getContent())
-                .isDeleted(comment.getIsDeleted())
+                .isDeleted(false)
+                .userName(comment.getUser().getFullName())
+                .avatarUrl(avatarImgUrl)
+                .updatedAt(comment.getUpdatedAt())
                 .build();
+    }
+
+
+
+    public CommentDTO createReplyComment(Integer parentCommentId, CommentDTO commentDTO) {
+        Comment parent = findCommentById(parentCommentId);
+        if (parent.getIsDeleted()) {
+            throw new IllegalArgumentException("Không thể reply một comment đã bị xóa");
+        }
+
+        User user = permissionService.getCurrentUser();
+        Comment reply = new Comment();
+        reply.setManga(parent.getManga());
+        reply.setChapter(parent.getChapter());
+        reply.setUser(user);
+        reply.setContent(commentDTO.getComment());
+        reply.setIsDeleted(false);
+        reply.setReply(parent); // <-- thiết lập comment cha
+
+        return convertToDTO(commentRepository.save(reply));
+    }
+
+    public List<CommentDTO> getAllCommentReply(int commentId) {
+        Comment parent = findCommentById(commentId);
+
+        return commentRepository.findByReplyOrderByUpdatedAtDesc(parent).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
 }

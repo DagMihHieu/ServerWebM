@@ -9,8 +9,8 @@ import java.util.Collection;
 import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Integer> {
-    List<Comment> findByChapter_Id(Integer chapterId);
-
+    List<Comment> findByChapter_IdOrderByUpdatedAtDesc(Integer chapterId);
+    List<Comment> findByReplyOrderByUpdatedAtDesc(Comment parent);
 //    void deleteByChapter_Id(Integer chapterId);
-    List<Comment> findByManga_Id(int mangaId);
+    List<Comment> findByManga_IdOrderByUpdatedAtDesc(int mangaId);
 }
