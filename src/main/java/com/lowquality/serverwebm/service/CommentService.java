@@ -85,11 +85,12 @@ public class CommentService {
     private CommentDTO convertToDTO(Comment comment) {
         String avatarImgUrl = UrlUtils.toPublicUrl(comment.getUser().getAvatarUrl());
         Integer replyId = comment.getReply() != null ? comment.getReply().getId() : null;
-
+        Integer chapId= comment.getChapter() != null ? comment.getChapter().getId() : null;
+        Integer chapNum = comment.getChapter() != null ? comment.getChapter().getChapNumber() : null;
         if (comment.getIsDeleted()) {
             return CommentDTO.builder()
                     .id(comment.getId())
-                    .chapId(comment.getChapter() != null ? comment.getChapter().getId() : null)
+                    .chapId(chapId)
                     .mangaId(comment.getManga().getId())
                     .comment("Comment này đã bị xóa")
                     .isDeleted(true)
@@ -97,12 +98,13 @@ public class CommentService {
                     .avatarUrl(avatarImgUrl)
                     .updatedAt(comment.getUpdatedAt())
                     .reply(replyId)
+                    .chapNum(chapNum)
                     .build();
         }
 
         return CommentDTO.builder()
                 .id(comment.getId())
-                .chapId(comment.getChapter() != null ? comment.getChapter().getId() : null)
+                .chapId(chapId)
                 .mangaId(comment.getManga().getId())
                 .comment(comment.getContent())
                 .isDeleted(false)
@@ -110,6 +112,7 @@ public class CommentService {
                 .avatarUrl(avatarImgUrl)
                 .updatedAt(comment.getUpdatedAt())
                 .reply(replyId)
+                .chapNum(chapNum)
                 .build();
     }
 

@@ -16,6 +16,7 @@ public class CommentDTO {
     private String comment;
     private Integer mangaId;
     private Integer chapId;
+    private Integer chapNum;
     private boolean isDeleted;
     private Integer reply;
     private String userName;
