@@ -30,7 +30,7 @@ public class CommentController {
         return ResponseEntity.ok(comments);
     }
     // lấy reply comment
-    @GetMapping("/{id}/replies")
+    @GetMapping("/{id}/reply")
     public ResponseEntity<List<CommentDTO>> getReplies(@PathVariable int id) {
         List<CommentDTO> replies = commentService.getAllCommentReply(id);
         return ResponseEntity.ok(replies);

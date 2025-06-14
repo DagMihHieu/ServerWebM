@@ -84,6 +84,8 @@ public class CommentService {
     }
     private CommentDTO convertToDTO(Comment comment) {
         String avatarImgUrl = UrlUtils.toPublicUrl(comment.getUser().getAvatarUrl());
+        Integer replyId = comment.getReply() != null ? comment.getReply().getId() : null;
+
         if (comment.getIsDeleted()) {
             return CommentDTO.builder()
                     .id(comment.getId())
@@ -94,6 +96,7 @@ public class CommentService {
                     .userName(comment.getUser().getFullName())
                     .avatarUrl(avatarImgUrl)
                     .updatedAt(comment.getUpdatedAt())
+                    .reply(replyId)
                     .build();
         }
 
@@ -106,6 +109,7 @@ public class CommentService {
                 .userName(comment.getUser().getFullName())
                 .avatarUrl(avatarImgUrl)
                 .updatedAt(comment.getUpdatedAt())
+                .reply(replyId)
                 .build();
     }
 
