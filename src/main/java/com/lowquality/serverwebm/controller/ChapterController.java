@@ -1,8 +1,7 @@
 package com.lowquality.serverwebm.controller;
 
-import com.lowquality.serverwebm.models.DTO.AddChapterRequest;
 import com.lowquality.serverwebm.models.DTO.ChapterDTO;
-import com.lowquality.serverwebm.models.DTO.PagesDTO;
+import com.lowquality.serverwebm.models.DTO.PageDTO;
 import com.lowquality.serverwebm.service.ChapterService;
 import com.lowquality.serverwebm.service.PageService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,13 +27,13 @@ public class ChapterController {
     public ResponseEntity<List<ChapterDTO>> getAllChapter(@PathVariable Integer mangaId) {
         return ResponseEntity.ok(chapterService.getChaptersByMangaId(mangaId));
     }
-    @GetMapping("{chapterNum}")
-    public ResponseEntity<List<PagesDTO>> getChapterPages(
-            @PathVariable Integer mangaId,
-            @PathVariable Integer chapterNum
-    ) {
-        return ResponseEntity.ok(pageService.getPagesOfChapter(mangaId,chapterNum));
-    }
+//    @GetMapping("{chapterNum}")
+//    public ResponseEntity<List<PageDTO>> getChapterPages(
+//            @PathVariable Integer mangaId,
+//            @PathVariable Integer chapterNum
+//    ) {
+//        return ResponseEntity.ok(pageService.getPagesOfChapter(mangaId,chapterNum));
+//    }
     @PostMapping(consumes = {"multipart/form-data"})
     public ResponseEntity<ChapterDTO> addChapterToManga(
             @PathVariable Integer mangaId,

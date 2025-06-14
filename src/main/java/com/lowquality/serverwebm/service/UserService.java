@@ -296,6 +296,7 @@ public class UserService {
             if(!permissionService.isAdminOrMod(currUser)) {
                 permissionService.noPermission("Đéo có quyền");
             }
+            newPassword = changePasswordRequest.getNewPassword();
         }
         targetUser.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(targetUser);

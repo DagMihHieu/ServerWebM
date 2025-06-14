@@ -2,7 +2,6 @@ package com.lowquality.serverwebm.service;
 
 import com.lowquality.serverwebm.models.DTO.ChapterDTO;
 import com.lowquality.serverwebm.models.DTO.MangadetailDTO;
-import com.lowquality.serverwebm.models.DTO.PagesDTO;
 import com.lowquality.serverwebm.models.entity.Chapter;
 import com.lowquality.serverwebm.models.entity.Mangadetail;
 import com.lowquality.serverwebm.models.entity.Pages;
@@ -10,15 +9,11 @@ import com.lowquality.serverwebm.models.entity.User;
 import com.lowquality.serverwebm.repository.ChapterRepository;
 import com.lowquality.serverwebm.repository.PagesRepository;
 import com.lowquality.serverwebm.util.SecurityUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service

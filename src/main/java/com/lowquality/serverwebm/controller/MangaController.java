@@ -1,9 +1,7 @@
 package com.lowquality.serverwebm.controller;
 
-import com.lowquality.serverwebm.models.DTO.ChapterDTO;
 import com.lowquality.serverwebm.models.DTO.CreateMangaRequest;
 import com.lowquality.serverwebm.models.DTO.MangadetailDTO;
-import com.lowquality.serverwebm.models.DTO.PagesDTO;
 import com.lowquality.serverwebm.service.ChapterService;
 import com.lowquality.serverwebm.service.MangaService;
 import com.lowquality.serverwebm.service.PageService;
