@@ -53,7 +53,9 @@ public class Mangadetail {
         updatedAt = java.time.LocalDateTime.now();
     }
     @PreUpdate
-    protected void onUpdate() {}
+    protected void onUpdate() {
+        updatedAt = java.time.LocalDateTime.now();
+    }
 
 
 }

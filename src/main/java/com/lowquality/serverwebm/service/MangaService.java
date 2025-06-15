@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import java.util.Set;
@@ -110,7 +111,7 @@ public class MangaService {
         List<CategoryDTO> categoryDTOs = mangadetail.getCategories().stream()
                 .map(categoryService::convertToDTO)
                 .collect(Collectors.toList());
-        String coverimgURL = urlUtils.toPublicUrl(mangadetail.getCover_img());
+        String coverimgURL = UrlUtils.toPublicUrl(mangadetail.getCover_img());
         return MangadetailDTO.builder()
                 .id(mangadetail.getId())
                 .name(mangadetail.getName())
@@ -123,7 +124,7 @@ public class MangaService {
                 .build();
     }
     //filter
-    public List<MangadetailDTO> filterManga(String search, List<Integer> categoryIds, Integer statusId, Integer authorId) {
+    public List<MangadetailDTO> filterManga(String search, List<Integer> categoryIds, Integer statusId, Integer authorId,String sortBy) {
         // Start with all manga
         List<Mangadetail> mangaList = mangadetailRepository.findAll();
 
@@ -161,9 +162,33 @@ public class MangaService {
                     .collect(Collectors.toList());
         }
 
+        mangaList = sortManga(mangaList, sortBy);
+        System.out.println("Sorted by latest:");
+        mangaList.forEach(m -> System.out.println(m.getName() + " - " + m.getUpdatedAt()));
         return mangaList.stream()
                 .map(this::convertMangadetailToDTO)
                 .collect(Collectors.toList());
+    }
+    private List<Mangadetail> sortManga(List<Mangadetail> mangaList, String sortBy) {
+        if (sortBy == null) return mangaList;
+
+        return switch (sortBy) {
+            case "latest" -> mangaList.stream()
+                    .sorted(Comparator.comparing(Mangadetail::getUpdatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+                    .collect(Collectors.toList());
+            case "popular" -> mangaList.stream() //vì chưa có lượt xem nên dùng chapter để so.
+                    .sorted(Comparator.comparing((Mangadetail m) -> m.getChapters().size()).reversed())
+                    .collect(Collectors.toList());
+            case "name" -> mangaList.stream()
+                    .sorted(Comparator.comparing(Mangadetail::getName, String.CASE_INSENSITIVE_ORDER))
+                    .collect(Collectors.toList());
+            case "rating" -> mangaList; // Chưa có trường rating
+            case "oldest" -> mangaList.stream()
+                    .sorted(Comparator.comparing(Mangadetail::getCreatedAt, Comparator.reverseOrder()))
+                    .collect(Collectors.toList());
+            default -> mangaList;
+
+        };
     }
 
 public MangadetailDTO addManga(CreateMangaRequest request) {
@@ -212,4 +237,7 @@ public MangadetailDTO addManga(CreateMangaRequest request) {
     }
 
 
+    public void save(Mangadetail manga) {
+        mangadetailRepository.save(manga);
+    }
 }

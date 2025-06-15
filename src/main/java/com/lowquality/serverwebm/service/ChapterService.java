@@ -14,6 +14,7 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -113,6 +114,8 @@ public class ChapterService {
         chapter.setManga(manga); // Nếu chapter có liên kết với manga
         chapter = chapterRepository.save(chapter);
 
+        manga.setUpdatedAt(LocalDateTime.now());
+        mangaService.save(manga);
         // Thay thế phần xử lý file bằng service
         String chapterSubDir = "chapter_" + chapter.getId();
         int pageNum = 1;
