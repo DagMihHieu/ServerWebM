@@ -47,7 +47,7 @@ public class MangaController {
             @RequestParam(required = false) List<Integer> categoryIds,
             @RequestParam(required = false) Integer statusId,
             @RequestParam(required = false) Integer authorId,
-            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false,defaultValue = "latest") String sortBy,
             @RequestParam(required = false) Integer uploader,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size

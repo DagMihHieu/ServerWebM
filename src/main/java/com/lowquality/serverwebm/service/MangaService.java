@@ -201,7 +201,7 @@ public Page<MangadetailDTO> filterManga(String search, List<Integer> categoryIds
     Pageable pageable = switch (sortBy) {
         case "latest" -> PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt"));
         case "name"   -> PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
-//        case "popular" -> PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "view") ); // chưa có view.
+        case "popular" -> PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "view") ); // chưa có view.
         default       -> PageRequest.of(page, size);  // fallback: không sort hoặc sort custom bằng Java
     };
 
