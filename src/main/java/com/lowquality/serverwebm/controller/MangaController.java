@@ -1,13 +1,13 @@
 package com.lowquality.serverwebm.controller;
 
-import com.lowquality.serverwebm.models.DTO.ChapterDTO;
 import com.lowquality.serverwebm.models.DTO.CreateMangaRequest;
 import com.lowquality.serverwebm.models.DTO.MangadetailDTO;
-import com.lowquality.serverwebm.models.DTO.PagesDTO;
 import com.lowquality.serverwebm.service.ChapterService;
 import com.lowquality.serverwebm.service.MangaService;
 import com.lowquality.serverwebm.service.PageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,14 +29,31 @@ public class MangaController {
 
     // Get all manga with optional filters
     @GetMapping
-    public ResponseEntity<List<MangadetailDTO>> getManga(
+//    public ResponseEntity<List<MangadetailDTO>> getManga(
+//            @RequestParam(required = false) String search,
+//            @RequestParam(required = false) Integer authorId,
+//            @RequestParam(required = false) List<Integer> categoryIds,
+//            @RequestParam(required = false) Integer statusId,
+//            @RequestParam(required = false) Integer uploader,
+//            @RequestParam(required = false) String  sortBy
+//    )
+//    {
+//            List<MangadetailDTO> mangaList;
+//            mangaList = mangaService.filterManga(search, categoryIds, statusId,authorId,sortBy,uploader);
+//        return ResponseEntity.ok(mangaList);
+//    }
+    public ResponseEntity<Page<MangadetailDTO>> getManga(
             @RequestParam(required = false) String search,
-            @RequestParam(required = false) Integer authorId,
             @RequestParam(required = false) List<Integer> categoryIds,
-            @RequestParam(required = false) Integer statusId) {
-            List<MangadetailDTO> mangaList;
-            mangaList = mangaService.filterManga(search, categoryIds, statusId,authorId);
-        return ResponseEntity.ok(mangaList);
+            @RequestParam(required = false) Integer statusId,
+            @RequestParam(required = false) Integer authorId,
+            @RequestParam(required = false,defaultValue = "latest") String sortBy,
+            @RequestParam(required = false) Integer uploader,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size
+    ) {
+        Page<MangadetailDTO> result = mangaService.filterManga(search, categoryIds, statusId, authorId, sortBy, uploader, page, size);
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/{mangaId}/categories")
@@ -67,10 +84,18 @@ public class MangaController {
         return ResponseEntity.ok(mangaService.getMangaById(id));
     }
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MangadetailDTO> createManga(
-            @RequestBody CreateMangaRequest request) {
+            @ModelAttribute CreateMangaRequest request) {
         return ResponseEntity.ok(mangaService.addManga(request));
+    }
+    @PutMapping(path = "/{id}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> updateManga(
+            @PathVariable Integer id,
+            @ModelAttribute CreateMangaRequest request
+    ){
+        mangaService.editMangadetail(id, request);
+        return ResponseEntity.ok().build();
     }
     @DeleteMapping("{mangaId}")
     public ResponseEntity<Void> deleteManga(

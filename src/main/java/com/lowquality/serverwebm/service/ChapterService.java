@@ -2,23 +2,20 @@ package com.lowquality.serverwebm.service;
 
 import com.lowquality.serverwebm.models.DTO.ChapterDTO;
 import com.lowquality.serverwebm.models.DTO.MangadetailDTO;
-import com.lowquality.serverwebm.models.DTO.PagesDTO;
 import com.lowquality.serverwebm.models.entity.Chapter;
 import com.lowquality.serverwebm.models.entity.Mangadetail;
 import com.lowquality.serverwebm.models.entity.Pages;
 import com.lowquality.serverwebm.models.entity.User;
 import com.lowquality.serverwebm.repository.ChapterRepository;
+import com.lowquality.serverwebm.repository.CommentRepository;
 import com.lowquality.serverwebm.repository.PagesRepository;
 import com.lowquality.serverwebm.util.SecurityUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,14 +26,16 @@ public class ChapterService {
     private final PageService pageService;
     private final PermissionService permissionService;
     private final FileStorageService fileStorageService;
+    private final CommentRepository commentRepository;
 
-    public ChapterService(PagesRepository pagesRepository, ChapterRepository chapterRepository, MangaService mangaService, PageService pageService, PermissionService permissionService, FileStorageService fileStorageService) {
+    public ChapterService(PagesRepository pagesRepository, ChapterRepository chapterRepository, MangaService mangaService, PageService pageService, PermissionService permissionService, FileStorageService fileStorageService, CommentRepository commentRepository) {
         this.pagesRepository = pagesRepository;
         this.chapterRepository = chapterRepository;
         this.mangaService = mangaService;
         this.pageService = pageService;
         this.permissionService = permissionService;
         this.fileStorageService = fileStorageService;
+        this.commentRepository = commentRepository;
     }
 
 
@@ -55,10 +54,12 @@ public class ChapterService {
             mangadetailDTO = mangaService.getMangaById(chapter.getManga().getId());
         }
 
+        assert mangadetailDTO != null;
         return ChapterDTO.builder()
                 .id(chapter.getId())
                 .chapter_name(chapter.getName())
-                .manga_id(mangadetailDTO)
+                .chapter_number(chapter.getChapNumber())
+                .manga_id(mangadetailDTO.getId())
                 .build();
     }
 
@@ -89,13 +90,13 @@ public class ChapterService {
     }
 
     public void deleteChapter(Integer id){
-        User user = SecurityUtils.getCurrentUser();
+//        User user = SecurityUtils.getCurrentUser();
         Chapter chapter = findById(id);
         permissionService.checkUserPermission(chapter.getManga().getUploader().getId(),"xóa chap trong truyện này.");
+//        commentRepository.deleteByChapter_Id(id);
         chapterRepository.delete(chapter);
     }
     public ChapterDTO addChapterWithPages(
-
             String chapterName,
             Integer chapterNumber,
             Integer mangaId,
@@ -103,7 +104,7 @@ public class ChapterService {
         if (isChapterNumberExists(mangaId, chapterNumber)) {
             throw new IllegalArgumentException("Chapter number already exists for this manga");
         }
-        User user = SecurityUtils.getCurrentUser();
+//        User user = SecurityUtils.getCurrentUser();
         // Tạo chapter mới
         Mangadetail manga= mangaService.getMangaEntityById(mangaId);
         permissionService.checkUserPermission(manga.getUploader().getId(),"thêm chap trong truyện này.");
@@ -113,6 +114,8 @@ public class ChapterService {
         chapter.setManga(manga); // Nếu chapter có liên kết với manga
         chapter = chapterRepository.save(chapter);
 
+        manga.setUpdatedAt(LocalDateTime.now());
+        mangaService.save(manga);
         // Thay thế phần xử lý file bằng service
         String chapterSubDir = "chapter_" + chapter.getId();
         int pageNum = 1;

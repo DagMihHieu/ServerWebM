@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -14,5 +16,11 @@ public class CommentDTO {
     private String comment;
     private Integer mangaId;
     private Integer chapId;
+    private Integer chapNum;
     private boolean isDeleted;
+    private Integer reply;
+    private String userName;
+    private String avatarUrl;
+    private LocalDateTime updatedAt;
+
 }

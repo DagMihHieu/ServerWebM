@@ -1,6 +1,6 @@
 package com.lowquality.serverwebm.service;
 
-import com.lowquality.serverwebm.models.DTO.PagesDTO;
+import com.lowquality.serverwebm.models.DTO.PageDTO;
 import com.lowquality.serverwebm.models.entity.Chapter;
 import com.lowquality.serverwebm.models.entity.Pages;
 import com.lowquality.serverwebm.repository.ChapterRepository;
@@ -23,16 +23,16 @@ public class PageService {
         this.pagesRepository = pagesRepository;
     }
 
-    private PagesDTO convertToDTO(Pages pages){
+    private PageDTO convertToDTO(Pages pages){
         String img_url = pages.getPage_img_url();
         img_url= UrlUtils.toPublicUrl(img_url);
-        return PagesDTO.builder()
+        return PageDTO.builder()
                 .id(pages.getId())
                 .page_number(pages.getPage_number())
                 .page_img_url(img_url)
                 .build();
     }
-    public List<PagesDTO> getPagesOfChapter(Integer mangaId, Integer chapterNum) {
+    public List<PageDTO> getPagesOfChapter(Integer mangaId, Integer chapterNum) {
         Chapter chapter = chapterRepository.findByManga_IdAndChapNumber(mangaId, chapterNum)
                 .orElseThrow(() -> new ResourceNotFoundException("Chapter not found"));
 
@@ -44,6 +44,7 @@ public class PageService {
       List<Pages> pages = pagesRepository.findByChapter_id(chapId);
         pagesRepository.deleteAll(pages);
     }
+
     public void savePage(Pages page) {
         pagesRepository.save(page);
     }
