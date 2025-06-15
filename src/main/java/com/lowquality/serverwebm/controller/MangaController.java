@@ -89,6 +89,14 @@ public class MangaController {
             @ModelAttribute CreateMangaRequest request) {
         return ResponseEntity.ok(mangaService.addManga(request));
     }
+    @PutMapping(path = "/{id}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> updateManga(
+            @PathVariable Integer id,
+            @ModelAttribute CreateMangaRequest request
+    ){
+        mangaService.editMangadetail(id, request);
+        return ResponseEntity.ok().build();
+    }
     @DeleteMapping("{mangaId}")
     public ResponseEntity<Void> deleteManga(
             @PathVariable Integer mangaId

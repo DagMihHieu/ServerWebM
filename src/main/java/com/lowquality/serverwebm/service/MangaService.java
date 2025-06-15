@@ -58,6 +58,7 @@ public class MangaService {
     }
     public void addCategories(Integer mangaId, List<Integer> categoryIds) {
         Mangadetail manga = this.getMangaEntityById(mangaId);
+        manga.getCategories().clear(); // Xoá toàn bộ quan hệ hiện tại
         permissionService.checkUserPermission(manga.getUploader().getId(),"cập nhật danh mục");
         List<Category> categories = new ArrayList<>();
         for (Integer categoryId : categoryIds) {
@@ -233,7 +234,7 @@ public MangadetailDTO addManga(CreateMangaRequest request) {
 
         User user = SecurityUtils.getCurrentUser();
         // Tạo manga mới
-        permissionService.checkAddMangaPermission();
+        permissionService.checkMangaPermission("thêm truyện");
         String MangaSubDir = "Manga_" + request.getName();
         String coverImgUrl =  fileStorageService.storeFile( request.getCoverImg(),MangaSubDir);
         Mangadetail manga = new Mangadetail();
@@ -273,7 +274,33 @@ public MangadetailDTO addManga(CreateMangaRequest request) {
         }
         return convertMangadetailToDTO(manga);
     }
+    public void editMangadetail(Integer id,CreateMangaRequest mangaRequest) {
+            //CreateMangaRequest tận dụng lại để cập nhật thông tin chapter
+            permissionService.checkMangaPermission("cập nhật truyện");
+            Mangadetail manga = getMangaEntityById(id);
+             manga.setName(mangaRequest.getName());
+             manga.setDescription(mangaRequest.getDescription());
+             if(mangaRequest.getAuthorName() != null) {
+                 Author author = authorService.findByAuthor_name(mangaRequest.getAuthorName());
+                 manga.setAuthor_id(author);
+             }
+             if (mangaRequest.getStatusId() != null) {
+                 Status status = statusService.findById(mangaRequest.getStatusId());
+                 manga.setStatus_id(status);
+             }
+             if (mangaRequest.getCategoryIds() != null && !mangaRequest.getCategoryIds().isEmpty()) {
+                this.addCategories(manga.getId(), mangaRequest.getCategoryIds());
+            }
+             if(mangaRequest.getCoverImg() != null && !mangaRequest.getCoverImg().isEmpty()) {
+                 fileStorageService.deleteFile(manga.getCover_img());
+                 String MangaSubDir = "Manga_" + mangaRequest.getName();
+                 String coverImgUrl =  fileStorageService.storeFile( mangaRequest.getCoverImg(),MangaSubDir);
+                 manga.setCover_img(coverImgUrl);
+             }
 
+                  mangadetailRepository.save(manga);
+//            return convertMangadetailToDTO(manga);
+    }
 
     public void save(Mangadetail manga) {
         mangadetailRepository.save(manga);

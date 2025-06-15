@@ -45,10 +45,10 @@ public class PermissionService {
     public void noPermission(String action) {
             throw new AccessDeniedException("Bạn không có quyền " + action );
     }
-    public void checkAddMangaPermission( ) {
+    public void checkMangaPermission( String action) {
         User currentUser = getCurrentUser();
         if ( !isUploader(currentUser) && !isAdminOrMod(currentUser)) {
-            throw new AccessDeniedException("Bạn không có quyền thêm truyện." );
+            throw new AccessDeniedException("Bạn không có quyền"+action );
         }
     }
     public boolean isAdmin(User currentUser) {

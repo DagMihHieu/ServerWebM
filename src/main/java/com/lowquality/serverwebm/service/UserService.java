@@ -183,13 +183,8 @@ public class UserService {
         return convertToDTO(user);
     }
     private   UserDTO convertToDTO(User user) {
-//        String avatarUrl = user.getAvatarUrl();
-//        avatarUrl =  UrlUtils.toPublicUrl(avatarUrl);
 
-        String avatarUrl = urlUtils.toPublicUrl(user.getAvatarUrl());
-        System.out.println("Convert user: " + user.getEmail());
-        System.out.println("Role: " + (user.getRole() != null ? user.getRole().getName() : "null"));
-        System.out.println("Avatar URL: " + avatarUrl);
+        String avatarUrl = UrlUtils.toPublicUrl(user.getAvatarUrl());
         RoleDTO   roleDTO = roleService.getRoleById(user.getRole().getRole_Id());
         return UserDTO.builder()
             .id(user.getId())
