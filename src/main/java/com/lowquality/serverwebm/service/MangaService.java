@@ -7,8 +7,8 @@ import com.lowquality.serverwebm.repository.MangadetailRepository;
 import com.lowquality.serverwebm.util.SecurityUtils;
 import com.lowquality.serverwebm.util.UrlUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -123,73 +123,111 @@ public class MangaService {
                 .id_status(statusDTO)
                 .build();
     }
-    //filter
-    public List<MangadetailDTO> filterManga(String search, List<Integer> categoryIds, Integer statusId, Integer authorId,String sortBy) {
-        // Start with all manga
-        List<Mangadetail> mangaList = mangadetailRepository.findAll();
-
-        // Apply filters
-        if (search != null && !search.isEmpty()) {
-            mangaList = mangaList.stream()
-                    .filter(m -> m.getName().toLowerCase().contains(search.toLowerCase()))
-                    .collect(Collectors.toList());
-        }
-
-        if (categoryIds != null && !categoryIds.isEmpty()) {
-            mangaList = mangaList.stream()
-//                    .filter(m -> m.getCategories().stream()
-//                            .allMatch(c -> categoryIds.contains(c.getId())))
+//    //filter
+//    public List<MangadetailDTO> filterManga(String search, List<Integer> categoryIds, Integer statusId, Integer authorId, String sortBy, Integer uploader) {
+//        List<Mangadetail> mangaList = new ArrayList<>();
+//        if (uploader == null) {
+//             mangaList = mangadetailRepository.findAll();
+//        }else{
+//            mangaList = mangadetailRepository.findByUploaderId(uploader);
+//        }
+//
+//        // Apply filters
+//        if (search != null && !search.isEmpty()) {
+//            mangaList = mangaList.stream()
+//                    .filter(m -> m.getName().toLowerCase().contains(search.toLowerCase()))
 //                    .collect(Collectors.toList());
-                    .filter(manga -> {
-                // Lấy ra danh sách ID category của manga hiện tại
-                Set<Integer> mangaCategoryIds = manga.getCategories().stream()
-                        .map(Category::getId)
-                        .collect(Collectors.toSet());
-                // Kiểm tra xem nó có chứa TẤT CẢ các ID được yêu cầu không
-                return mangaCategoryIds.containsAll(categoryIds);
-            })
-                    .collect(Collectors.toList());
-        }
+//        }
+//
+//        if (categoryIds != null && !categoryIds.isEmpty()) {
+//            mangaList = mangaList.stream()
+////                    .filter(m -> m.getCategories().stream()
+////                            .allMatch(c -> categoryIds.contains(c.getId())))
+////                    .collect(Collectors.toList());
+//                    .filter(manga -> {
+//                // Lấy ra danh sách ID category của manga hiện tại
+//                Set<Integer> mangaCategoryIds = manga.getCategories().stream()
+//                        .map(Category::getId)
+//                        .collect(Collectors.toSet());
+//                // Kiểm tra xem nó có chứa TẤT CẢ các ID được yêu cầu không
+//                return mangaCategoryIds.containsAll(categoryIds);
+//            })
+//                    .collect(Collectors.toList());
+//        }
+//
+//        if (statusId != null) {
+//            mangaList = mangaList.stream()
+//                    .filter(m -> m.getStatus_id() != null && statusId.equals(m.getStatus_id().getId()))
+//                    .collect(Collectors.toList());
+//        }
+//        if (authorId != null) {
+//            mangaList = mangaList.stream()
+//                    .filter(m -> m.getStatus_id() != null && authorId.equals(m.getAuthor_id().getId()))
+//                    .collect(Collectors.toList());
+//        }
+//
+//        mangaList = sortManga(mangaList, sortBy);
+//        System.out.println("Sorted by latest:");
+//        mangaList.forEach(m -> System.out.println(m.getName() + " - " + m.getUpdatedAt()));
+//        return mangaList.stream()
+//                .map(this::convertMangadetailToDTO)
+//                .collect(Collectors.toList());
+//    }
+//    private List<Mangadetail> sortManga(List<Mangadetail> mangaList, String sortBy) {
+//        if (sortBy == null) return mangaList;
+//
+//        return switch (sortBy) {
+//            case "latest" -> mangaList.stream()
+//                    .sorted(Comparator.comparing(Mangadetail::getUpdatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+//                    .collect(Collectors.toList());
+//            case "popular" -> mangaList.stream() //vì chưa có lượt xem nên dùng chapter để so.
+//                    .sorted(Comparator.comparing((Mangadetail m) -> m.getChapters().size()).reversed())
+//                    .collect(Collectors.toList());
+//            case "name" -> mangaList.stream()
+//                    .sorted(Comparator.comparing(Mangadetail::getName, String.CASE_INSENSITIVE_ORDER))
+//                    .collect(Collectors.toList());
+//            case "rating" -> mangaList; // Chưa có trường rating
+//            case "oldest" -> mangaList.stream()
+//                    .sorted(Comparator.comparing(Mangadetail::getCreatedAt, Comparator.reverseOrder()))
+//                    .collect(Collectors.toList());
+//            default -> mangaList;
+//
+//        };
+//    }
+public Page<MangadetailDTO> filterManga(String search, List<Integer> categoryIds, Integer statusId, Integer authorId,
+                                        String sortBy, Integer uploader, int page, int size) {
 
-        if (statusId != null) {
-            mangaList = mangaList.stream()
-                    .filter(m -> m.getStatus_id() != null && statusId.equals(m.getStatus_id().getId()))
-                    .collect(Collectors.toList());
-        }
-        if (authorId != null) {
-            mangaList = mangaList.stream()
-                    .filter(m -> m.getStatus_id() != null && authorId.equals(m.getAuthor_id().getId()))
-                    .collect(Collectors.toList());
-        }
+    // Tạo Pageable với thứ tự mặc định theo updatedAt nếu sortBy là latest
+    Pageable pageable = switch (sortBy) {
+        case "latest" -> PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt"));
+        case "name"   -> PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
+//        case "popular" -> PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "view") ); // chưa có view.
+        default       -> PageRequest.of(page, size);  // fallback: không sort hoặc sort custom bằng Java
+    };
 
-        mangaList = sortManga(mangaList, sortBy);
-        System.out.println("Sorted by latest:");
-        mangaList.forEach(m -> System.out.println(m.getName() + " - " + m.getUpdatedAt()));
-        return mangaList.stream()
-                .map(this::convertMangadetailToDTO)
-                .collect(Collectors.toList());
-    }
-    private List<Mangadetail> sortManga(List<Mangadetail> mangaList, String sortBy) {
-        if (sortBy == null) return mangaList;
+    Page<Mangadetail> mangaPage = mangadetailRepository.filterMangaJPQL(
+            search,
+            categoryIds != null && !categoryIds.isEmpty() ? categoryIds : null,
+            statusId,
+            authorId,
+            uploader,
+            pageable
+    );
 
-        return switch (sortBy) {
-            case "latest" -> mangaList.stream()
-                    .sorted(Comparator.comparing(Mangadetail::getUpdatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
-                    .collect(Collectors.toList());
-            case "popular" -> mangaList.stream() //vì chưa có lượt xem nên dùng chapter để so.
-                    .sorted(Comparator.comparing((Mangadetail m) -> m.getChapters().size()).reversed())
-                    .collect(Collectors.toList());
-            case "name" -> mangaList.stream()
-                    .sorted(Comparator.comparing(Mangadetail::getName, String.CASE_INSENSITIVE_ORDER))
-                    .collect(Collectors.toList());
-            case "rating" -> mangaList; // Chưa có trường rating
-            case "oldest" -> mangaList.stream()
-                    .sorted(Comparator.comparing(Mangadetail::getCreatedAt, Comparator.reverseOrder()))
-                    .collect(Collectors.toList());
-            default -> mangaList;
+    // Trường hợp cần sort lại trong Java
+    List<Mangadetail> sortedList = switch (sortBy) {
+        case "popular" -> mangaPage.getContent().stream()
+                .sorted(Comparator.comparing((Mangadetail m) -> m.getChapters().size()).reversed())
+                .toList();
+        default -> mangaPage.getContent();
+    };
 
-        };
-    }
+    List<MangadetailDTO> dtoList = sortedList.stream()
+            .map(this::convertMangadetailToDTO)
+            .toList();
+
+    return new PageImpl<>(dtoList, pageable, mangaPage.getTotalElements());
+}
 
 public MangadetailDTO addManga(CreateMangaRequest request) {
 
