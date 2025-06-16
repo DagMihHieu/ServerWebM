@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ChapterRepository extends JpaRepository<Chapter, Integer> {
-    List<Chapter> findByManga_Id(Integer mangaId);
+    List<Chapter> findByManga_IdOrderByChapNumberDesc(Integer mangaId);
 
     Optional<Chapter> findByManga_IdAndChapNumber(Integer mangaId, Integer chapNumber);
 

@@ -235,7 +235,7 @@ public MangadetailDTO addManga(CreateMangaRequest request) {
         User user = SecurityUtils.getCurrentUser();
         // Tạo manga mới
         permissionService.checkMangaPermission("thêm truyện");
-        String MangaSubDir = "Manga_" + request.getName();
+        String MangaSubDir = "Manga_" + fileStorageService.sanitizeFileName(request.getName());
         String coverImgUrl =  fileStorageService.storeFile( request.getCoverImg(),MangaSubDir);
         Mangadetail manga = new Mangadetail();
         manga.setName(request.getName());
@@ -293,7 +293,7 @@ public MangadetailDTO addManga(CreateMangaRequest request) {
             }
              if(mangaRequest.getCoverImg() != null && !mangaRequest.getCoverImg().isEmpty()) {
                  fileStorageService.deleteFile(manga.getCover_img());
-                 String MangaSubDir = "Manga_" + mangaRequest.getName();
+                 String MangaSubDir = "Manga_" + fileStorageService.sanitizeFileName(mangaRequest.getName());
                  String coverImgUrl =  fileStorageService.storeFile( mangaRequest.getCoverImg(),MangaSubDir);
                  manga.setCover_img(coverImgUrl);
              }

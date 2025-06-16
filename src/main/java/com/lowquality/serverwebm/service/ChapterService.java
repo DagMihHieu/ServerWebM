@@ -75,7 +75,7 @@ public class ChapterService {
     }
 
     public List<ChapterDTO> getChaptersByMangaId(Integer mangaId) {
-        return chapterRepository.findByManga_Id(mangaId).stream()
+        return chapterRepository.findByManga_IdOrderByChapNumberDesc(mangaId).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
@@ -102,7 +102,7 @@ public class ChapterService {
             Integer mangaId,
             List<MultipartFile> pages) {
         if (isChapterNumberExists(mangaId, chapterNumber)) {
-            throw new IllegalArgumentException("Chapter number already exists for this manga");
+            throw new IllegalArgumentException("Chapter: "+ chapterNumber+" đã tồn tại");
         }
 //        User user = SecurityUtils.getCurrentUser();
         // Tạo chapter mới
@@ -117,7 +117,8 @@ public class ChapterService {
         manga.setUpdatedAt(LocalDateTime.now());
         mangaService.save(manga);
         // Thay thế phần xử lý file bằng service
-        String chapterSubDir = "chapter_" + chapter.getId();
+        String MangaSubDir = "Manga_" + fileStorageService.sanitizeFileName(manga.getName());
+        String chapterSubDir = MangaSubDir + "chapter_" + fileStorageService.sanitizeFileName(String.valueOf(chapter.getChapNumber()));
         int pageNum = 1;
 
         for (MultipartFile file : pages) {
