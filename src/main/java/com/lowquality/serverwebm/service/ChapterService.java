@@ -118,7 +118,7 @@ public class ChapterService {
         mangaService.save(manga);
         // Thay thế phần xử lý file bằng service
         String MangaSubDir = "Manga_" + fileStorageService.sanitizeFileName(manga.getName());
-        String chapterSubDir = MangaSubDir + "chapter_" + fileStorageService.sanitizeFileName(String.valueOf(chapter.getChapNumber()));
+        String chapterSubDir = MangaSubDir + "/chapter_" + fileStorageService.sanitizeFileName(String.valueOf(chapter.getChapNumber()));
         int pageNum = 1;
 
         for (MultipartFile file : pages) {
