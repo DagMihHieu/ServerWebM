@@ -47,6 +47,8 @@ public class Mangadetail {
     private List<Chapter> chapters = new ArrayList<>();
     @OneToMany(mappedBy = "manga", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
+    @OneToMany(mappedBy = "manga", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Favorite> favorite = new ArrayList<>();
     @PrePersist
     protected void onCreate() {
         createdAt = java.time.LocalDateTime.now();
