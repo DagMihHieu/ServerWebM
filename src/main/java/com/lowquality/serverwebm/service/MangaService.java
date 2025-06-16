@@ -298,7 +298,10 @@ public MangadetailDTO addManga(CreateMangaRequest request) {
                 this.addCategories(manga.getId(), mangaRequest.getCategoryIds());
             }
              if(mangaRequest.getCoverImg() != null && !mangaRequest.getCoverImg().isEmpty()) {
-                 fileStorageService.deleteFile(manga.getCover_img());
+                 if (manga.getCover_img() != null) {
+                     fileStorageService.deleteFile(manga.getCover_img());
+                 }
+
                  String MangaSubDir = "Manga_" + fileStorageService.sanitizeFileName(mangaRequest.getName());
                  String coverImgUrl =  fileStorageService.storeFile( mangaRequest.getCoverImg(),MangaSubDir);
                  manga.setCover_img(coverImgUrl);
