@@ -29,7 +29,12 @@ public class CommentController {
         List<CommentDTO> comments = commentService.getAllCommentInManga(mangaId);
         return ResponseEntity.ok(comments);
     }
-
+    // lấy reply comment
+    @GetMapping("/{id}/reply")
+    public ResponseEntity<List<CommentDTO>> getReplies(@PathVariable int id) {
+        List<CommentDTO> replies = commentService.getAllCommentReply(id);
+        return ResponseEntity.ok(replies);
+    }
 //    // GET comment by ID
 //    @GetMapping("/{id}")
 //    public ResponseEntity<CommentDTO> getCommentById(@PathVariable int id) {
@@ -40,9 +45,18 @@ public class CommentController {
     // POST create a new comment
     @PostMapping
     public ResponseEntity<CommentDTO> createComment(
-   @RequestBody CommentDTO commentDTO
+    @RequestBody CommentDTO commentDTO
     ) {
         CommentDTO created = commentService.createComment(commentDTO);
+        return ResponseEntity.ok(created);
+    }
+
+    @PostMapping("/{id}/reply")
+    public ResponseEntity<CommentDTO> createComment(
+            @PathVariable Integer id,
+            @RequestBody CommentDTO commentDTO
+    ) {
+        CommentDTO created = commentService.createReplyComment(id,commentDTO);
         return ResponseEntity.ok(created);
     }
 

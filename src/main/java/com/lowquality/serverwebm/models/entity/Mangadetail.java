@@ -45,13 +45,17 @@ public class Mangadetail {
     private java.time.LocalDateTime updatedAt;
     @OneToMany(mappedBy = "manga", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Chapter> chapters = new ArrayList<>();
+    @OneToMany(mappedBy = "manga", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
     @PrePersist
     protected void onCreate() {
         createdAt = java.time.LocalDateTime.now();
         updatedAt = java.time.LocalDateTime.now();
     }
     @PreUpdate
-    protected void onUpdate() {}
+    protected void onUpdate() {
+        updatedAt = java.time.LocalDateTime.now();
+    }
 
 
 }

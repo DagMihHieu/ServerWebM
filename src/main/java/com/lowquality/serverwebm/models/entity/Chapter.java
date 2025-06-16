@@ -3,6 +3,7 @@ package com.lowquality.serverwebm.models.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -31,6 +32,8 @@ public class Chapter {
         createdAt = java.time.LocalDateTime.now();
         updatedAt = java.time.LocalDateTime.now();
     }
+    @OneToMany(mappedBy = "chapter", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
     @PreUpdate
     protected void onUpdate() {}
 

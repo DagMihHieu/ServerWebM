@@ -12,5 +12,5 @@ public class Author {
     @Column(name = "id", nullable = false)
     private Integer id;
     @Column(name = "author_name", length = 100)
-    private String author_name;
+    private String authorName;
 }
