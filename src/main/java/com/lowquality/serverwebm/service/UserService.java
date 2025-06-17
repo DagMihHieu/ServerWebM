@@ -140,24 +140,37 @@ public class UserService {
     public UserDTO banUser(int id) {
         User user = findById(id);
 
-        // Kiểm tra không cho phép ban admin khác (nếu cần)
-        User currentUser = SecurityUtils.getCurrentUser();
-        if(Objects.equals(user.getId(), currentUser.getId())){
-            permissionService.noPermission("Không thể ban bản thân");
+        // Kiểm tra không cho phép ban admin khác
+        User currentUser = permissionService.getCurrentUser();
+        // Không cho ban chính mình
+        if (Objects.equals(user.getId(), currentUser.getId())) {
+            permissionService.noPermission("Không thể ban chính mình");
         }
-        if (user.getRole().getName().equals("ADMIN") || !permissionService.isAdminOrMod(currentUser)) {
-            permissionService.noPermission("Bạn không thể ban admin");
+
+        // Nếu user bị ban là ADMIN
+        if (permissionService.isAdmin(user)) {
+            permissionService.noPermission("ban admin");
         }
-        if (user.getRole().getName().equals("MOD") || !permissionService.isAdmin(currentUser)) {
-            permissionService.noPermission("Bạn không có quyền ban mod khác. ");
+        // Nếu user bị ban là MOD
+        if (permissionService.isMod(user)) {
+            if (!permissionService.isAdmin(currentUser)) {
+                permissionService.noPermission("Chỉ admin mới được ban mod");
+            }
         }
-        user.setActive(false);
+        // Nếu user bị ban là USER/UPLOADER mà currentUser không phải mod/admin
+        if (!permissionService.isAdminOrMod(currentUser)) {
+            permissionService.noPermission("ban người dùng");
+        }
+        if ( user.isActive()){
+            user.setActive(false);
+        }
+        user.setActive(true);
         userRepository.save(user);
         return convertToDTO(user);
     }
     public UserDTO unBanUser(int id) {
         User user = findById(id);
-        // Kiểm tra không cho phép ban admin khác (nếu cần)
+        // Kiểm tra không cho phép ban admin khác
         User currentUser = SecurityUtils.getCurrentUser();
         if (user.getRole().getName().equals("ADMIN") || !permissionService.isAdminOrMod(currentUser)) {
             permissionService.noPermission("Bạn không thể unban admin");
@@ -171,8 +184,19 @@ public class UserService {
     }
     public UserDTO updateAvatar(Integer userId, MultipartFile avatar) {
         User user = findById(userId);
+        boolean isOwner = user.getId().equals(user.getId());
         permissionService.checkUserPermission(user.getId(), "bạn không có quyền cập nhật avatar");
-
+        if (!isOwner) {
+            // Nếu không phải chính mình
+            if (!permissionService.isAdmin(user)) {
+                // Nếu không phải admin thì không được cập nhật avatar người khác
+                permissionService.noPermission("Bạn không có quyền cập nhật avatar người dùng khác");
+            }
+            // Admin không được sửa avatar Admin khác
+            if (permissionService.isAdmin(user)) {
+                permissionService.noPermission("Bạn không thể cập nhật avatar của admin khác");
+            }
+        }
         if (user.getAvatarUrl() != null) {
             fileStorageService.deleteFile(user.getAvatarUrl());
         }
@@ -200,12 +224,17 @@ public class UserService {
             .build();
     }
     public UserDTO editUserByAdmin(int userId, EditUserDTO editUserDTO) {
-        User currentUser = SecurityUtils.getCurrentUser();
+        User currentUser = permissionService.getCurrentUser();
+        User userToEdit = findById(userId);
         if (!permissionService.isAdminOrMod(currentUser)) {
             permissionService.noPermission("Bạn không có quyền chỉnh sửa người dùng");
         }
 
-        User userToEdit = findById(userId);
+        // MOD không được chỉnh sửa ADMIN hoặc MOD khác
+        if (permissionService.isMod(currentUser) && (permissionService.isAdmin(userToEdit) || permissionService.isMod(userToEdit))) {
+            permissionService.noPermission("Mod không thể chỉnh sửa admin hoặc mod khác");
+        }
+
         if (editUserDTO.getRoleId() != null) {
             Role newRole = roleService.findByRoleId(editUserDTO.getRoleId());
             if (newRole == null) {
