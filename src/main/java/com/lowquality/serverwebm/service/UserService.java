@@ -52,8 +52,11 @@ public class UserService {
 
     }
 
-    public List<UserDTO> getAllUsers() {
+    public List<UserDTO> getAllUsers(String search) {
         permissionService.onlyModAndAdmin("Lấy thông tin tất cả người dùng");
+        if (search != null && !search.isEmpty()) {
+            return findUsersByNameAndEmail(search,search);
+        }
         List<User> users = userRepository.findAll();
         return users.stream()
             .map(this::convertToDTO)
@@ -306,5 +309,7 @@ public class UserService {
         return sb.toString();
     }
 
-
+    public List<UserDTO> findUsersByNameAndEmail(String name, String email) {
+        return userRepository.findByFullNameContainingIgnoreCaseOrEmailContainingIgnoreCase(name,email ).stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
 }

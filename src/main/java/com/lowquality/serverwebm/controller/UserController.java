@@ -25,11 +25,12 @@ public class UserController {
     private UserService userService;
 
     @GetMapping
-    public ResponseEntity<List<UserDTO>> getAllUsers() {
-        List<UserDTO> users = userService.getAllUsers();
+    public ResponseEntity<List<UserDTO>> getAllUsers(
+            @RequestParam(required = false) String search
+    ) {
+        List<UserDTO> users = userService.getAllUsers(search);
         return ResponseEntity.ok(users);
     }
-
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable int id) {
         UserDTO user = userService.getUserById(id);
