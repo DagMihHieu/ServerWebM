@@ -1,15 +1,12 @@
 package com.lowquality.serverwebm.service;
 
 import com.lowquality.serverwebm.models.DTO.ChapterDTO;
-import com.lowquality.serverwebm.models.DTO.MangadetailDTO;
 import com.lowquality.serverwebm.models.entity.Chapter;
 import com.lowquality.serverwebm.models.entity.Mangadetail;
 import com.lowquality.serverwebm.models.entity.Pages;
-import com.lowquality.serverwebm.models.entity.User;
 import com.lowquality.serverwebm.repository.ChapterRepository;
-import com.lowquality.serverwebm.repository.CommentRepository;
-import com.lowquality.serverwebm.repository.PagesRepository;
-import com.lowquality.serverwebm.util.SecurityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,23 +17,25 @@ import java.util.stream.Collectors;
 
 @Service
 public class ChapterService {
-    private final PagesRepository pagesRepository;
-    private final MangaService mangaService;
-    private final ChapterRepository chapterRepository;
-    private final PageService pageService;
-    private final PermissionService permissionService;
-    private final FileStorageService fileStorageService;
-    private final CommentRepository commentRepository;
 
-    public ChapterService(PagesRepository pagesRepository, ChapterRepository chapterRepository, MangaService mangaService, PageService pageService, PermissionService permissionService, FileStorageService fileStorageService, CommentRepository commentRepository) {
-        this.pagesRepository = pagesRepository;
-        this.chapterRepository = chapterRepository;
-        this.mangaService = mangaService;
-        this.pageService = pageService;
-        this.permissionService = permissionService;
-        this.fileStorageService = fileStorageService;
-        this.commentRepository = commentRepository;
-    }
+    @Autowired
+    ChapterRepository chapterRepository;
+
+
+    @Autowired
+    PermissionService permissionService;
+    @Autowired
+    FileStorageService fileStorageService;
+    @Autowired
+    PageService pageService;
+    @Autowired
+    @Lazy
+    MangaService mangaService;
+
+//    public ChapterService(PageService pageService, MangaService mangaService) {
+//        this.pageService = pageService;
+//        this.mangaService = mangaService;
+//    }
 
 
     public Chapter findById(Integer id) {
@@ -48,18 +47,11 @@ public class ChapterService {
         if (chapter == null) {
             return null;
         }
-
-        MangadetailDTO mangadetailDTO = null;
-        if (chapter.getManga() != null) {
-            mangadetailDTO = mangaService.getMangaById(chapter.getManga().getId());
-        }
-
-        assert mangadetailDTO != null;
         return ChapterDTO.builder()
                 .id(chapter.getId())
                 .chapter_name(chapter.getName())
                 .chapter_number(chapter.getChapNumber())
-                .manga_id(mangadetailDTO.getId())
+
                 .build();
     }
 

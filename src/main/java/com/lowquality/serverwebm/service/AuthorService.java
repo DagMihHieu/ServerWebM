@@ -47,7 +47,7 @@ public class AuthorService {
         return authorRepository.findByAuthorName(name);
     }
 
-    public void save(Author author) {
-      authorRepository.save(author);
+    public Author save(Author author) {
+      return authorRepository.save(author);
     }
 }

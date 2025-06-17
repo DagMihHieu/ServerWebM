@@ -45,7 +45,7 @@ public class SecurityConfig {
 //                        // Các API public cho phép GET
 //                        .requestMatchers(HttpMethod.GET, "/api/manga/**", "/api/categories/**", "/api/authors/**").permitAll()
 //
-//                        // Các API này: POST, PUT, DELETE chỉ ADMIN và MOD
+//                        // Các API này: POST, PUT, DELETE chỉ ADMIN và MOD, UPLOADER
                         //các api chapter và page nằm trong manga
 //                        .requestMatchers(HttpMethod.POST, "/api/manga/**", "/api/categories/**", "/api/authors/**").hasAnyRole("ADMIN", "MOD", "UPLOADER")
 //                        .requestMatchers(HttpMethod.PUT, "/api/manga/**", "/api/categories/**", "/api/authors/**").hasAnyRole("ADMIN", "MOD", "UPLOADER")

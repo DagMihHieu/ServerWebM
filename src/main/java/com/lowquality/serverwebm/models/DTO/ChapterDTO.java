@@ -13,6 +13,6 @@ public class ChapterDTO {
     private Integer id;
     private String chapter_name;
     private Integer chapter_number;
-    private Integer manga_id;
+//    private Integer manga_id;
 
 }

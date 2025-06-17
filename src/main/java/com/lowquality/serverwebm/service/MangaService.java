@@ -23,26 +23,25 @@ import java.util.stream.Collectors;
 public class MangaService {
     @Autowired
     MangadetailRepository mangadetailRepository;
-    @Autowired
-    CategoryService categoryService;
-    @Autowired
-    AuthorService authorService;
-    @Autowired
-    StatusService statusService;
-    @Autowired
-    private PermissionService permissionService;
-    @Autowired
-    private FileStorageService fileStorageService;
+    private final CategoryService categoryService;
+    private final AuthorService authorService;
+    private final StatusService statusService;
+    private final PermissionService permissionService;
+    private final FileStorageService fileStorageService;
+    private final ChapterService chapterService;
 
 
-    //    @Autowired
-//    MangaService(MangadetailRepository mangadetailRepository, ChapterRepository chapterRepository, AuthorService authorService, CategoryService categoryService, StatusService statusService) {
-//        this.mangadetailRepository = mangadetailRepository;
-//        this.chapterRepository = chapterRepository;
-//        this.categoryService = categoryService;
-//        this.authorService = authorService;
-//        this.statusService = statusService;
-//    }
+    @Autowired
+    MangaService(MangadetailRepository mangadetailRepository , AuthorService authorService, CategoryService categoryService, StatusService statusService, PermissionService permissionService, FileStorageService fileStorageService, ChapterService chapterService) {
+        this.mangadetailRepository = mangadetailRepository;
+
+        this.categoryService = categoryService;
+        this.authorService = authorService;
+        this.statusService = statusService;
+            this.permissionService = permissionService;
+            this.fileStorageService = fileStorageService;
+            this.chapterService = chapterService;
+        }
     public Mangadetail getMangaEntityById(Integer id) {
         return mangadetailRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Manga not found: " + id));
@@ -112,6 +111,10 @@ public class MangaService {
                 .map(categoryService::convertToDTO)
                 .collect(Collectors.toList());
         String coverimgURL = UrlUtils.toPublicUrl(mangadetail.getCover_img());
+        List<ChapterDTO> chapterDTOs = new ArrayList<>();
+        if (mangadetail.getChapters() != null) {
+            chapterDTOs = chapterService.getChaptersByMangaId(mangadetail.getId());
+        }
         return MangadetailDTO.builder()
                 .id(mangadetail.getId())
                 .name(mangadetail.getName())
@@ -121,6 +124,7 @@ public class MangaService {
                 .id_category(categoryDTOs)
                 .uploader(mangadetail.getUploader().getFullName())
                 .id_status(statusDTO)
+                .chapter(chapterDTOs)
                 .build();
     }
 //    //filter
@@ -230,13 +234,9 @@ public Page<MangadetailDTO> filterManga(String search, List<Integer> categoryIds
 }
 
 public MangadetailDTO addManga(CreateMangaRequest request) {
-
         User user = SecurityUtils.getCurrentUser();
         // Tạo manga mới
         permissionService.checkMangaPermission("thêm truyện");
-
-
-
         Mangadetail manga = new Mangadetail();
         manga.setName(request.getName());
         manga.setDescription(request.getDescription());
@@ -245,11 +245,7 @@ public MangadetailDTO addManga(CreateMangaRequest request) {
         String coverImgUrl =  fileStorageService.storeFile( request.getCoverImg(),MangaSubDir);
         manga.setCover_img(coverImgUrl);
          }
-
         manga.setUploader(user);
-        // Set author nếu có
-
-
 
         if (request.getStatusId() != null) {
             Status status = statusService.findById(request.getStatusId());
@@ -261,18 +257,15 @@ public MangadetailDTO addManga(CreateMangaRequest request) {
         manga.setStatus_id(defaultStatus);
         // Lưu manga
         manga = mangadetailRepository.save(manga);
-        if (request.getAuthorName() != null) {
-            Author author = authorService.findByAuthor_name(request.getAuthorName());
-            if (author != null) {
-                manga.setAuthor_id(author);
-            }
-            else{
-    //                AuthorDTO authorDTO=  authorService.createAuthor(request.getAuthorName());
-    //                author = authorService.findById(authorDTO.getId());
-    //                manga.setAuthor_id(author);
-                addAuthorToManga(manga.getId(),request.getAuthorName());
-            }
-
+         if (request.getAuthorName() != null && !request.getAuthorName().isBlank()) {
+        Author author = authorService.findByAuthor_name(request.getAuthorName().trim());
+        if (author == null) {
+            // Nếu chưa có, tạo mới
+            Author newAuthor = new Author();
+            newAuthor.setAuthorName(request.getAuthorName().trim());
+            author = authorService.save(newAuthor); // Lưu vào DB
+        }
+        manga.setAuthor_id(author);
         }
         // Thêm categories nếu có
         if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
@@ -287,13 +280,15 @@ public MangadetailDTO addManga(CreateMangaRequest request) {
             Mangadetail manga = getMangaEntityById(id);
              manga.setName(mangaRequest.getName());
              manga.setDescription(mangaRequest.getDescription());
-             if(mangaRequest.getAuthorName() != null) {
-                 Author author = authorService.findByAuthor_name(mangaRequest.getAuthorName());
-                 if (author != null) {
-                     manga.setAuthor_id(author);
-                 }
-                addAuthorToManga(manga.getId(), mangaRequest.getAuthorName());
-             }
+            if (mangaRequest.getAuthorName() != null && !mangaRequest.getAuthorName().isBlank()) {
+            Author author = authorService.findByAuthor_name(mangaRequest.getAuthorName().trim());
+            if (author == null) {
+                Author newAuthor = new Author();
+                newAuthor.setAuthorName(mangaRequest.getAuthorName().trim());
+                author = authorService.save(newAuthor);
+            }
+            manga.setAuthor_id(author);
+         }
              if (mangaRequest.getStatusId() != null) {
                  Status status = statusService.findById(mangaRequest.getStatusId());
                  manga.setStatus_id(status);
