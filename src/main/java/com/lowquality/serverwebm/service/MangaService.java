@@ -6,6 +6,7 @@ import com.lowquality.serverwebm.repository.ChapterRepository;
 import com.lowquality.serverwebm.repository.MangadetailRepository;
 import com.lowquality.serverwebm.util.SecurityUtils;
 import com.lowquality.serverwebm.util.UrlUtils;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -23,8 +24,6 @@ public class MangaService {
     @Autowired
     MangadetailRepository mangadetailRepository;
     @Autowired
-    ChapterRepository chapterRepository;
-    @Autowired
     CategoryService categoryService;
     @Autowired
     AuthorService authorService;
@@ -33,11 +32,8 @@ public class MangaService {
     @Autowired
     private PermissionService permissionService;
     @Autowired
-    private UserService userService;
-    @Autowired
     private FileStorageService fileStorageService;
-    @Autowired
-    private UrlUtils urlUtils;
+
 
     //    @Autowired
 //    MangaService(MangadetailRepository mangadetailRepository, ChapterRepository chapterRepository, AuthorService authorService, CategoryService categoryService, StatusService statusService) {
@@ -80,12 +76,15 @@ public class MangaService {
         mangadetailRepository.save(manga);
     }
 // cập nhật tác giả
+
     public void addAuthorToManga(Integer mangaId, String authorName) {
         Mangadetail manga = this.getMangaEntityById(mangaId);
         permissionService.checkUserPermission(manga.getUploader().getId(),"cập nhật tác giả");
         Author author = new Author();
         author.setAuthorName(authorName);
+        authorService.save(author);
         manga.setAuthor_id(author);
+
         mangadetailRepository.save(manga);
     }
 
@@ -280,6 +279,7 @@ public MangadetailDTO addManga(CreateMangaRequest request) {
         }
         return convertMangadetailToDTO(manga);
     }
+
     public void editMangadetail(Integer id,CreateMangaRequest mangaRequest) {
             //CreateMangaRequest tận dụng lại để cập nhật thông tin chapter
             permissionService.checkMangaPermission("cập nhật truyện");
@@ -288,7 +288,10 @@ public MangadetailDTO addManga(CreateMangaRequest request) {
              manga.setDescription(mangaRequest.getDescription());
              if(mangaRequest.getAuthorName() != null) {
                  Author author = authorService.findByAuthor_name(mangaRequest.getAuthorName());
-                 manga.setAuthor_id(author);
+                 if (author != null) {
+                     manga.setAuthor_id(author);
+                 }
+                addAuthorToManga(manga.getId(), mangaRequest.getAuthorName());
              }
              if (mangaRequest.getStatusId() != null) {
                  Status status = statusService.findById(mangaRequest.getStatusId());
