@@ -161,10 +161,9 @@ public class UserService {
         if (!permissionService.isAdminOrMod(currentUser)) {
             permissionService.noPermission("ban người dùng");
         }
-        if ( user.isActive()){
-            user.setActive(false);
-        }
-        user.setActive(true);
+
+
+        user.setActive(!user.isActive());
         userRepository.save(user);
         return convertToDTO(user);
     }
