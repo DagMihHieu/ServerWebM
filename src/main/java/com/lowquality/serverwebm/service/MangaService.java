@@ -248,18 +248,7 @@ public MangadetailDTO addManga(CreateMangaRequest request) {
 
         manga.setUploader(user);
         // Set author nếu có
-        if (request.getAuthorName() != null) {
-            Author author = authorService.findByAuthor_name(request.getAuthorName());
-            if (author != null) {
-                manga.setAuthor_id(author);
-            }
-            else{
-                AuthorDTO authorDTO=  authorService.createAuthor(request.getAuthorName());
-                author = authorService.findById(authorDTO.getId());
-                manga.setAuthor_id(author);
-            }
 
-        }
 
 
         if (request.getStatusId() != null) {
@@ -272,7 +261,19 @@ public MangadetailDTO addManga(CreateMangaRequest request) {
         manga.setStatus_id(defaultStatus);
         // Lưu manga
         manga = mangadetailRepository.save(manga);
+        if (request.getAuthorName() != null) {
+            Author author = authorService.findByAuthor_name(request.getAuthorName());
+            if (author != null) {
+                manga.setAuthor_id(author);
+            }
+            else{
+    //                AuthorDTO authorDTO=  authorService.createAuthor(request.getAuthorName());
+    //                author = authorService.findById(authorDTO.getId());
+    //                manga.setAuthor_id(author);
+                addAuthorToManga(manga.getId(),request.getAuthorName());
+            }
 
+        }
         // Thêm categories nếu có
         if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
             this.addCategories(manga.getId(), request.getCategoryIds());
