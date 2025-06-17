@@ -22,11 +22,12 @@ public interface MangadetailRepository extends JpaRepository<Mangadetail, Intege
       AND (:uploaderId IS NULL OR m.uploader.id = :uploaderId)
       AND (:categoryIds IS NULL OR c.id IN :categoryIds)
     GROUP BY m.id
-    HAVING COUNT(DISTINCT c.id) = :#{#categoryIds == null ? 0 : #categoryIds.size()}
+    HAVING (:categoryIds IS NULL OR COUNT(DISTINCT c.id) = :categorySize)
 """)
     Page<Mangadetail> filterMangaJPQL(
             @Param("search") String search,
             @Param("categoryIds") List<Integer> categoryIds,
+            @Param("categorySize") Long categorySize, // truyền thủ công categoryIds.size()
             @Param("statusId") Integer statusId,
             @Param("authorId") Integer authorId,
             @Param("uploaderId") Integer uploaderId,
