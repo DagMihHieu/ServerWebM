@@ -31,7 +31,10 @@ public class FileStorageService {
             throw new RuntimeException("Failed to store file: " + file.getOriginalFilename(), e);
         }
     }
-
+    public String sanitizeFileName(String input) {
+        // Loại bỏ hoặc thay thế các ký tự bất hợp lệ trong tên file/directory
+        return input.replaceAll("[\\\\/:*?\"<>|]", "_");
+    }
     public void deleteFile(String filePath) {
         try {
             Path path = Paths.get(filePath);

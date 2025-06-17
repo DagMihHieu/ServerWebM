@@ -46,4 +46,8 @@ public class AuthorService {
     public Author findByAuthor_name(String name) {
         return authorRepository.findByAuthorName(name);
     }
+
+    public Author save(Author author) {
+      return authorRepository.save(author);
+    }
 }

@@ -23,4 +23,5 @@ public class MangadetailDTO {
     private String description;
     private List<CategoryDTO> id_category;
     private StatusDTO id_status;
+    private List<ChapterDTO> chapter;
 }

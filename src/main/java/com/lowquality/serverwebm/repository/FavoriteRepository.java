@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface FavoriteRepository extends JpaRepository<Favorite, Integer> {
-   List<Favorite> findByUser_Id(Integer userId);
+   List<Favorite> findByUser_IdOrderByMangaUpdatedAtDesc(Integer userId);
 
     Favorite findByUser_IdAndManga_Id(Integer userId, Integer mangaId);
 }

@@ -60,5 +60,4 @@ public ResponseEntity<Void> deleteChapter(@PathVariable Integer chapterId) {
         pageService.deleteByChapterId(chapterId);
     return ResponseEntity.noContent().build();
     }
-
 }
