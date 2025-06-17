@@ -26,7 +26,7 @@ public class FavoriteService {
 
     public List<FavoriteDTO> findByUserId() {
         User user = permissionService.getCurrentUser();
-        return favoriteRepository.findByUser_Id(user.getId()).stream().map(this::convertToDTO).collect(Collectors.toList());
+        return favoriteRepository.findByUser_IdOrderByMangaUpdatedAtDesc(user.getId()).stream().map(this::convertToDTO).collect(Collectors.toList());
 
     }
     public Favorite findById(Integer id) {

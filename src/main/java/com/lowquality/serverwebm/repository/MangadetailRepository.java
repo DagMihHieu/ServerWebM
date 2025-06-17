@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface MangadetailRepository extends JpaRepository<Mangadetail, Integer> {
     List<Mangadetail> findByNameContaining(String name);
-
+    List<Mangadetail>    findByIdOrderByUpdatedAtDesc(Integer id);
     List<Mangadetail> findByUploaderId(Integer uploaderId);
     @Query("""
         SELECT DISTINCT m FROM Mangadetail m
