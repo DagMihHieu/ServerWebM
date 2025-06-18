@@ -208,10 +208,14 @@ public Page<MangadetailDTO> filterManga(String search, List<Integer> categoryIds
 //        case "popular" -> PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "view") ); // chưa có view.
         default       -> PageRequest.of(page, size);  // fallback: không sort hoặc sort custom bằng Java
     };
-    Long categorySize = (categoryIds == null || categoryIds.isEmpty()) ? null : (long) categoryIds.size();
+
+    List<Integer> safeCategoryIds = (categoryIds == null || categoryIds.isEmpty()) ? List.of(-1) : categoryIds;
+    Long categorySize = (categoryIds == null || categoryIds.isEmpty()) ? 0L : (long) categoryIds.size();
+//    Long categorySize = (categoryIds == null || categoryIds.isEmpty()) ? null : (long) categoryIds.size();
     Page<Mangadetail> mangaPage = mangadetailRepository.filterMangaJPQL(
             search,
-            (categoryIds != null && !categoryIds.isEmpty()) ? categoryIds : null,
+//            (categoryIds != null && !categoryIds.isEmpty()) ? categoryIds : null,
+            safeCategoryIds,
             categorySize,
             statusId,
             authorId,
