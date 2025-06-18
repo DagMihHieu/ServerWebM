@@ -31,26 +31,30 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        String[] restrictedApis = {
+                "/api/manga/**", "/api/categories/**", "/api/authors/**"
+        };
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .authorizeHttpRequests(auth -> auth
+                .authorizeHttpRequests(auth ->
 
-//                        // Các endpoint auth cho phép tất cả
-//                        .requestMatchers("/api/auth/**").permitAll()
-//
-                        // /api/users/**: chỉ ADMIN và MOD
-                        .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "MOD")
-//
-//                        // Các API public cho phép GET
-//                        .requestMatchers(HttpMethod.GET, "/api/manga/**", "/api/categories/**", "/api/authors/**").permitAll()
-//
-//                        // Các API này: POST, PUT, DELETE chỉ ADMIN và MOD, UPLOADER
-                        //các api chapter và page nằm trong manga
-//                        .requestMatchers(HttpMethod.POST, "/api/manga/**", "/api/categories/**", "/api/authors/**").hasAnyRole("ADMIN", "MOD", "UPLOADER")
-//                        .requestMatchers(HttpMethod.PUT, "/api/manga/**", "/api/categories/**", "/api/authors/**").hasAnyRole("ADMIN", "MOD", "UPLOADER")
-//                        .requestMatchers(HttpMethod.DELETE, "/api/manga/**", "/api/categories/**", "/api/authors/**").hasAnyRole("ADMIN", "MOD", "UPLOADER")
+                                auth
 
+                        // Các endpoint auth cho phép tất cả
+                        .requestMatchers("/api/auth/**").permitAll()
+
+
+                        .requestMatchers("/api/users/**","/api/favorites/**").authenticated()
+
+                        // Các API public cho phép GET
+                        .requestMatchers(HttpMethod.GET, "/api/manga/**", "/api/categories/**", "/api/authors/**","/api/comments/**").permitAll()
+
+                        // Các API này: POST, PUT, DELETE chỉ ADMIN và MOD, UPLOADER
+//                        các api chapter và page nằm trong manga
+                        .requestMatchers(HttpMethod.POST, restrictedApis).hasAnyRole("ADMIN", "MOD", "UPLOADER")
+                        .requestMatchers(HttpMethod.PUT,  restrictedApis).hasAnyRole("ADMIN", "MOD", "UPLOADER")
+                        .requestMatchers(HttpMethod.DELETE, restrictedApis).hasAnyRole("ADMIN", "MOD", "UPLOADER")
                         // Mọi request khác ko cần xác thực
                         .anyRequest().permitAll()
                 )
