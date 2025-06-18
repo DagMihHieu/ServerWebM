@@ -68,17 +68,17 @@ public class PermissionService {
 
     public void checkChangeRolePermission(User targetUser, String targetRoleName) {
         User currentUser = getCurrentUser();
-        if(Objects.equals(targetUser.getId(), currentUser.getId())){
-           noPermission("Không thể chỉnh role bản thân");
+        if(Objects.equals(targetUser.getId(), currentUser.getId())) {
+            noPermission("Không thể chỉnh role bản thân");
         }
         if (isAdmin(currentUser)) {
             return; // Admin có thể làm mọi thứ
         }
 
         if (isMod(currentUser)) {
-            // Mod chỉ có thể promote lên uploader
-            if ((!"UPLOADER".equals(targetRoleName))) {
-                throw new AccessDeniedException("Bạn chỉ có thể thăng cấp người dùng lên uploader");
+            // Mod chỉ có thể thay đổi role thành UPLOADER hoặc USER
+            if (!"UPLOADER".equals(targetRoleName) && !"USER".equals(targetRoleName)) {
+                throw new AccessDeniedException("Bạn chỉ có thể thay đổi role thành UPLOADER hoặc USER");
             }
             // Mod không thể thay đổi role của admin/mod khác
             if (isAdmin(targetUser) || isMod(targetUser)) {
@@ -90,7 +90,7 @@ public class PermissionService {
         throw new AccessDeniedException("Bạn không có quyền thay đổi role");
     }
 
-    private boolean isMod(User currentUser) {
+    boolean isMod(User currentUser) {
         return "MOD".equals(getRoleName(currentUser));
     }
     private String getRoleName(User user) {
